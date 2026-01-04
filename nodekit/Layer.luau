@@ -1,0 +1,177 @@
+local RunService = game:GetService("RunService")
+
+local safeCall = require("./util/safeCall")
+
+local Node = require("./Node")
+
+local Layer = {}
+Layer.__index = Layer
+setmetatable(Layer, { __index = Node })
+
+export type Layer = typeof(setmetatable({} :: any, Layer))
+
+function Layer:create(): Layer
+	local node = Node.Frame:create()
+		:setSize(UDim2.fromScale(1, 1))
+		:setPosition(UDim2.fromScale(0.5, 0.5))
+		:setAnchorPoint(Vector2.new(0.5, 0.5))
+		:setBackgroundTransparency(1)
+		:setActive(false)
+		:setType("Layer")
+
+	local inst: any = setmetatable(node, Layer)
+
+	inst._eventsEnabled = true
+	inst._blocksEventsBelow = false
+
+	inst._isUpdateEnabled = false
+	inst._updatePriority = 0
+	inst._updateConn = nil
+	inst._isPaused = false
+
+	safeCall(inst, "init")
+	return (inst :: unknown) :: Layer
+end
+
+function Layer:setEventEnabled(enabled: boolean): Layer
+	self._eventsEnabled = enabled and true or false
+	return self
+end
+
+function Layer:isEventEnabled(): boolean
+	return self._eventsEnabled == true
+end
+
+function Layer:setBlocksEventsBelow(blocks: boolean): Layer
+	self._blocksEventsBelow = blocks and true or false
+	return self
+end
+
+function Layer:isBlockingEventPropagation(): boolean
+	return self._blocksEventsBelow == true
+end
+
+function Layer:onPause() end
+function Layer:onResume() end
+
+function Layer:scheduleUpdate(priority: number?): Layer
+	self._isUpdateEnabled = true
+	self._updatePriority = priority or 0
+
+	if self._isRunning and not self._updateConn then
+		self:_attachUpdate()
+	end
+
+	return self
+end
+
+function Layer:unscheduleUpdate(): Layer
+	self._isUpdateEnabled = false
+	self:_detachUpdate()
+	return self
+end
+
+function Layer:isUpdateScheduled(): boolean
+	return self._isUpdateEnabled == true
+end
+
+function Layer:update(_dt: number) end
+
+function Layer:_attachUpdate()
+	self:_detachUpdate()
+
+	self._updateConn = RunService.Heartbeat:Connect(function(dt)
+		if not self._isRunning then
+			return
+		end
+		if not self._isUpdateEnabled then
+			return
+		end
+		if self._isPaused then
+			return
+		end
+		safeCall(self, "update", dt)
+	end)
+end
+
+function Layer:_detachUpdate()
+	if typeof(self._updateConn) == "RBXScriptConnection" then
+		self._updateConn:Disconnect()
+		self._updateConn = nil
+	end
+end
+
+function Layer:_setRunning(running: boolean)
+	if running and not self._isRunning then
+		self._isRunning = true
+		self._isPaused = false
+		self:onEnter()
+
+		if self._isUpdateEnabled then
+			self:_attachUpdate()
+		end
+	elseif not running and self._isRunning then
+		self._isRunning = false
+		self._isPaused = false
+		self._isTransitioning = false
+		self:_detachUpdate()
+		self:onExit()
+	end
+end
+
+function Layer:_setEnteringTransition(active: boolean)
+	self._isTransitioningIn = active and true or false
+	if not active then
+		self:onEnterTransitionDidFinish()
+	end
+end
+
+function Layer:_setExitingTransition(active: boolean)
+	self._isTransitioningOut = active and true or false
+	if active then
+		self:onExitTransitionDidStart()
+	end
+end
+
+function Layer:pause(): Layer
+	if self._isPaused then
+		return self
+	end
+	self._isPaused = true
+	self:onPause()
+	return self
+end
+
+function Layer:resume(): Layer
+	if not self._isPaused then
+		return self
+	end
+	self._isPaused = false
+	self:onResume()
+	return self
+end
+
+function Layer:isPaused(): boolean
+	return self._isPaused == true
+end
+
+function Layer:_dispatchEvent(event)
+	if not self._eventsEnabled then
+		if self._blocksEventsBelow then
+			event:consume()
+		end
+		return
+	end
+
+	safeCall(self, "onEvent", event)
+	if self._blocksEventsBelow then
+		event:consume()
+	end
+end
+
+function Layer:destroy()
+	self:_detachUpdate()
+	return Node.destroy(self)
+end
+
+return Layer
