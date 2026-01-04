@@ -11,7 +11,7 @@ type FadeOptions = {
 }
 
 function TransitionFade:create(opts: FadeOptions?)
-	local inst = setmetatable(nodekit.Transition:create(), TransitionFade)
+  local inst = setmetatable(nodekit.Transition:create(), TransitionFade)
   inst._color = (opts and opts.color) or Color3.new(0, 0, 0)
   return inst
 end
@@ -31,13 +31,13 @@ function TransitionFade:run(duration: number, incoming: any, outgoing: any, fini
     return
   end
 
-	local parent = self._getRootGuiParent(incoming, outgoing)
+  local parent = self._getRootGuiParent(incoming, outgoing)
   if not parent then
     finalize()
     return
   end
 
-	local overlay = nodekit.Node.Frame:create("TransitionFadeOverlay")
+  local overlay = nodekit.Node.Frame:create("TransitionFadeOverlay")
     :setSize(UDim2.fromScale(1, 1))
     :setPosition(UDim2.fromScale(.5, .5))
     :setAnchorPoint(Vector2.new(.5, .5))
