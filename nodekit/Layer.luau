@@ -10,14 +10,21 @@ setmetatable(Layer, { __index = Node })
 
 export type Layer = typeof(setmetatable({} :: any, Layer))
 
-function Layer:create(): Layer
+function Layer:inherit()
+	local newClass = {}
+	newClass.__index = newClass
+	setmetatable(newClass, self)
+	return newClass
+end
+
+function Layer:create(t: string?): Layer
 	local node = Node.Frame:create()
 		:setSize(UDim2.fromScale(1, 1))
 		:setPosition(UDim2.fromScale(0.5, 0.5))
 		:setAnchorPoint(Vector2.new(0.5, 0.5))
 		:setBackgroundTransparency(1)
 		:setActive(false)
-		:setType("Layer")
+		:setType(t or "Layer")
 
 	local inst: any = setmetatable(node, Layer)
 
