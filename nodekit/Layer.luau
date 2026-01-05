@@ -4,11 +4,7 @@ local safeCall = require("./util/safeCall")
 
 local Node = require("./Node")
 
-local Layer = {}
-Layer.__index = Layer
-setmetatable(Layer, { __index = Node })
-
-export type Layer = typeof(setmetatable({} :: any, Layer))
+local Layer = Node:inherit()
 
 function Layer:inherit()
 	local newClass = {}
@@ -17,7 +13,7 @@ function Layer:inherit()
 	return newClass
 end
 
-function Layer:create(t: string?): Layer
+function Layer:create(t: string?)
 	local node = Node.Frame:create()
 		:setSize(UDim2.fromScale(1, 1))
 		:setPosition(UDim2.fromScale(0.5, 0.5))
@@ -37,10 +33,10 @@ function Layer:create(t: string?): Layer
 	inst._isPaused = false
 
 	safeCall(inst, "init")
-	return (inst :: unknown) :: Layer
+	return inst
 end
 
-function Layer:setEventEnabled(enabled: boolean): Layer
+function Layer:setEventEnabled(enabled: boolean)
 	self._eventsEnabled = enabled and true or false
 	return self
 end
@@ -49,7 +45,7 @@ function Layer:isEventEnabled(): boolean
 	return self._eventsEnabled == true
 end
 
-function Layer:setBlocksEventsBelow(blocks: boolean): Layer
+function Layer:setBlocksEventsBelow(blocks: boolean)
 	self._blocksEventsBelow = blocks and true or false
 	return self
 end
@@ -61,7 +57,7 @@ end
 function Layer:onPause() end
 function Layer:onResume() end
 
-function Layer:scheduleUpdate(priority: number?): Layer
+function Layer:scheduleUpdate(priority: number?)
 	self._isUpdateEnabled = true
 	self._updatePriority = priority or 0
 
@@ -72,7 +68,7 @@ function Layer:scheduleUpdate(priority: number?): Layer
 	return self
 end
 
-function Layer:unscheduleUpdate(): Layer
+function Layer:unscheduleUpdate()
 	self._isUpdateEnabled = false
 	self:_detachUpdate()
 	return self
@@ -140,7 +136,7 @@ function Layer:_setExitingTransition(active: boolean)
 	end
 end
 
-function Layer:pause(): Layer
+function Layer:pause()
 	if self._isPaused then
 		return self
 	end
@@ -149,7 +145,7 @@ function Layer:pause(): Layer
 	return self
 end
 
-function Layer:resume(): Layer
+function Layer:resume()
 	if not self._isPaused then
 		return self
 	end
