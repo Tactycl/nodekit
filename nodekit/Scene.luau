@@ -9,13 +9,20 @@ Scene.Type = table.freeze({
 	TRANSITION = "TRANSITION",
 })
 
-function Scene:create()
+function Scene:inherit()
+	local newClass = {}
+	newClass.__index = newClass
+	setmetatable(newClass, self)
+	return newClass
+end
+
+function Scene:create(t: string?)
 	local node = Node.Frame:create()
 		:setPosition(UDim2.fromScale(0.5, 0.5))
 		:setAnchorPoint(Vector2.new(0.5, 0.5))
 		:setSize(UDim2.fromScale(1, 1))
 		:setBackgroundTransparency(1)
-		:setType("Scene")
+		:setType(t or "Scene")
 
 	local inst = setmetatable(node, Scene)
 	inst._sceneType = Scene.Type.DEFAULT
