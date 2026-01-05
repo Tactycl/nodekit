@@ -2,9 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local nodekit = require(ReplicatedStorage.Packages.nodekit)
 
-local TransitionFade = {}
-TransitionFade.__index = TransitionFade
-setmetatable(TransitionFade, nodekit.Transition)
+local TransitionFade = nodekit.Transition:inherit()
 
 type FadeOptions = {
 	color: Color3?,
