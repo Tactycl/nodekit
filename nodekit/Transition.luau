@@ -1,6 +1,13 @@
 local Transition = {}
 Transition.__index = Transition
 
+function Transition:inherit()
+	local newClass = {}
+	newClass.__index = newClass
+	setmetatable(newClass, Transition)
+	return newClass
+end
+
 function Transition:create()
 	local inst = setmetatable({}, Transition)
 	return inst
