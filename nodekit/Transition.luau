@@ -4,7 +4,7 @@ Transition.__index = Transition
 function Transition:inherit()
 	local newClass = {}
 	newClass.__index = newClass
-	setmetatable(newClass, Transition)
+	setmetatable(newClass, self)
 	return newClass
 end
 
