@@ -1,8 +1,6 @@
 local Node = require("./Node")
 
-local Scene = {}
-Scene.__index = Scene
-setmetatable(Scene, { __index = Node })
+local Scene = Node:inherit()
 
 Scene.Type = table.freeze({
 	DEFAULT = "DEFAULT",
