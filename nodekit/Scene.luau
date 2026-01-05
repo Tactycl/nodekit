@@ -9,8 +9,18 @@ Scene.Type = table.freeze({
 
 function Scene:inherit()
 	local newClass = {}
-	newClass.__index = newClass
-	setmetatable(newClass, self)
+
+	newClass.__index = function(obj, key)
+		local v = rawget(newClass, key)
+		if v ~= nil then
+			return v
+		end
+
+		return self.__index(obj, key)
+	end
+
+	setmetatable(newClass, { __index = self })
+
 	return newClass
 end
 
