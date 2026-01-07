@@ -149,6 +149,10 @@ function Node:_untrackAction(a)
 	end
 end
 
+function Node:getRblxInstance()
+	return self._instance
+end
+
 function Node:addTag(tag: string)
 	if not self._tags[tag] then
 		self._tags[tag] = true
