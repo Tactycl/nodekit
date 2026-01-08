@@ -48,7 +48,7 @@ return function(self, event)
 			or input.UserInputType == Enum.UserInputType.Touch
 		then
 			self._pressed = true
-			safeCall(self, "onPressed")
+			safeCall(self, "onPress")
 			event:consume()
 			return
 		end
@@ -69,11 +69,11 @@ return function(self, event)
 			local wasPressed = self._pressed == true
 			self._pressed = false
 
-			safeCall(self, "onReleased")
+			safeCall(self, "onRelease")
 
 			local canClick = (self._hovered == true) or (p and p.isOver == true)
 			if wasPressed and canClick then
-				safeCall(self, "onClicked")
+				safeCall(self, "onClick")
 			end
 
 			event:consume()
