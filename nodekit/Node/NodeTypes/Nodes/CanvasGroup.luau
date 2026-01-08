@@ -1,0 +1,199 @@
+local VirtualCorners = require("../Virtuals/Corners")
+local VirtualScale = require("../Virtuals/Scale")
+local VirtualPadding = require("../Virtuals/Padding")
+local VirtualAspectRatio = require("../Virtuals/AspectRatio")
+local VirtualFlexItem = require("../Virtuals/FlexItem")
+local VirtualGradient = require("../Virtuals/Gradient")
+local VirtualSizeConstraint = require("../Virtuals/SizeConstraint")
+local VirtualListLayout = require("../Virtuals/ListLayout")
+local VirtualGridLayout = require("../Virtuals/GridLayout")
+
+local OnEvent = require("../Funcs/OnEvent")
+
+local CanvasGroup = {}
+
+CanvasGroup.rblxClass = "CanvasGroup"
+CanvasGroup.initParams = {}
+
+CanvasGroup.properties = {
+	readable = {
+		"GroupColor3",
+		"GroupTransparency",
+		"Active",
+		"AnchorPoint",
+		"AutomaticSize",
+		"BackgroundColor",
+		"BackgroundColor3",
+		"BackgroundTransparency",
+		"BorderColor",
+		"BorderColor3",
+		"BorderMode",
+		"BorderSizePixel",
+		"GuiState",
+		"Interactable",
+		"NextSelectionDown",
+		"NextSelectionLeft",
+		"NextSelectionRight",
+		"NextSelectionUp",
+		"Position",
+		"Rotation",
+		"Selectable",
+		"SelectionImageObject",
+		"SelectionOrder",
+		"Size",
+		"SizeConstraint",
+		"Transparency",
+		"Visible",
+		"AbsolutePosition",
+		"AbsoluteRotation",
+		"AbsoluteSize",
+		"AutoLocalize",
+		"RootLocalizationTable",
+		"SelectionBehaviorDown",
+		"SelectionBehaviorLeft",
+		"SelectionBehaviorRight",
+		"SelectionBehaviorUp",
+		"SelectionGroup",
+	},
+	writeable = {
+		"GroupColor3",
+		"GroupTransparency",
+		"Active",
+		"AnchorPoint",
+		"AutomaticSize",
+		"BackgroundColor",
+		"BackgroundColor3",
+		"BackgroundTransparency",
+		"BorderColor",
+		"BorderColor3",
+		"BorderMode",
+		"BorderSizePixel",
+		"Interactable",
+		"NextSelectionDown",
+		"NextSelectionLeft",
+		"NextSelectionRight",
+		"NextSelectionUp",
+		"Position",
+		"Rotation",
+		"Selectable",
+		"SelectionImageObject",
+		"SelectionOrder",
+		"Size",
+		"SizeConstraint",
+		"Transparency",
+		"Visible",
+		"AutoLocalize",
+		"RootLocalizationTable",
+		"SelectionBehaviorDown",
+		"SelectionBehaviorLeft",
+		"SelectionBehaviorRight",
+		"SelectionBehaviorUp",
+		"SelectionGroup",
+	},
+
+	virtualReadable = {
+		{ name = "CornerRadius", fn = VirtualCorners.getVirtual },
+
+		{ name = "Scale", fn = VirtualScale.getVirtual },
+
+		{ name = "PaddingLeft", fn = VirtualPadding.getVirtualLeft },
+		{ name = "PaddingRight", fn = VirtualPadding.getVirtualRight },
+		{ name = "PaddingTop", fn = VirtualPadding.getVirtualTop },
+		{ name = "PaddingBottom", fn = VirtualPadding.getVirtualBottom },
+		
+		{ name = "AspectRatioEnabled", fn = VirtualAspectRatio.getVirtualEnabled },
+		{ name = "AspectRatio", fn = VirtualAspectRatio.getVirtualAspectRatio },
+		{ name = "AspectRatioType", fn = VirtualAspectRatio.getVirtualAspectType },
+		{ name = "AspectRatioDominantAxis", fn = VirtualAspectRatio.getVirtualDominantAxis },
+
+		{ name = "FlexItemEnabled", fn = VirtualFlexItem.getVirtualEnabled },
+		{ name = "FlexMode", fn = VirtualFlexItem.getVirtualFlexMode },
+		{ name = "FlexItemLineAlignment", fn = VirtualFlexItem.getVirtualItemLineAlignment },
+
+		{ name = "GradientEnabled", fn = VirtualGradient.getVirtualEnabled },
+		{ name = "GradientColor", fn = VirtualGradient.getVirtualColor },
+		{ name = "GradientTransparency", fn = VirtualGradient.getVirtualTransparency },
+		{ name = "GradientOffset", fn = VirtualGradient.getVirtualOffset },
+		{ name = "GradientRotation", fn = VirtualGradient.getVirtualRotation },
+
+		{ name = "MinSize", fn = VirtualSizeConstraint.getVirtualMinSize },
+		{ name = "MaxSize", fn = VirtualSizeConstraint.getVirtualMaxSize },
+
+		{ name = "ListLayoutEnabled", fn = VirtualListLayout.getVirtualEnabled },
+		{ name = "ListFillDirection", fn = VirtualListLayout.getVirtualFillDirection },
+		{ name = "ListHorizontalAlignment", fn = VirtualListLayout.getVirtualHorizontalAlignment },
+		{ name = "ListHorizontalFlex", fn = VirtualListLayout.getVirtualHorizontalFlex },
+		{ name = "ListItemLineAlignment", fn = VirtualListLayout.getVirtualItemLineAlignment },
+		{ name = "ListPadding", fn = VirtualListLayout.getVirtualPadding },
+		{ name = "ListSortOrder", fn = VirtualListLayout.getVirtualSortOrder },
+		{ name = "ListVerticalAlignment", fn = VirtualListLayout.getVirtualVerticalAlignment },
+		{ name = "ListVerticalFlex", fn = VirtualListLayout.getVirtualVerticalFlex },
+		{ name = "ListWraps", fn = VirtualListLayout.getVirtualWraps },
+
+		{ name = "GridLayoutEnabled", fn = VirtualGridLayout.getVirtualEnabled },
+		{ name = "GridCellSize", fn = VirtualGridLayout.getVirtualCellSize },
+		{ name = "GridCellPadding", fn = VirtualGridLayout.getVirtualCellPadding },
+		{ name = "GridFillDirection", fn = VirtualGridLayout.getVirtualFillDirection },
+		{ name = "GridFillDirectionMaxCells", fn = VirtualGridLayout.getVirtualFillDirectionMaxCells },
+		{ name = "GridHorizontalAlignment", fn = VirtualGridLayout.getVirtualHorizontalAlignment },
+		{ name = "GridSortOrder", fn = VirtualGridLayout.getVirtualSortOrder },
+		{ name = "GridStartCorner", fn = VirtualGridLayout.getVirtualStartCorner },
+		{ name = "GridVerticalAlignment", fn = VirtualGridLayout.getVirtualVerticalAlignment },
+	},
+	virtualWriteable = {
+		{ name = "CornerRadius", fn = VirtualCorners.setVirtual },
+
+		{ name = "Scale", fn = VirtualScale.setVirtual },
+
+		{ name = "PaddingLeft", fn = VirtualPadding.setVirtualLeft },
+		{ name = "PaddingRight", fn = VirtualPadding.setVirtualRight },
+		{ name = "PaddingTop", fn = VirtualPadding.setVirtualTop },
+		{ name = "PaddingBottom", fn = VirtualPadding.setVirtualBottom },
+		{ name = "Padding", fn = VirtualPadding.setVirtualAll },
+		
+		{ name = "AspectRatioEnabled", fn = VirtualAspectRatio.setVirtualEnabled },
+		{ name = "AspectRatio", fn = VirtualAspectRatio.setVirtualAspectRatio },
+		{ name = "AspectRatioType", fn = VirtualAspectRatio.setVirtualAspectType },
+		{ name = "AspectRatioDominantAxis", fn = VirtualAspectRatio.setVirtualDominantAxis },
+
+		{ name = "FlexItemEnabled", fn = VirtualFlexItem.setVirtualEnabled },
+		{ name = "FlexMode", fn = VirtualFlexItem.setVirtualFlexMode },
+		{ name = "FlexItemLineAlignment", fn = VirtualFlexItem.setVirtualItemLineAlignment },
+
+		{ name = "GradientEnabled", fn = VirtualGradient.setVirtualEnabled },
+		{ name = "GradientColor", fn = VirtualGradient.setVirtualColor },
+		{ name = "GradientTransparency", fn = VirtualGradient.setVirtualTransparency },
+		{ name = "GradientOffset", fn = VirtualGradient.setVirtualOffset },
+		{ name = "GradientRotation", fn = VirtualGradient.setVirtualRotation },
+
+		{ name = "MinSize", fn = VirtualSizeConstraint.setVirtualMinSize },
+		{ name = "MaxSize", fn = VirtualSizeConstraint.setVirtualMaxSize },
+
+		{ name = "ListLayoutEnabled", fn = VirtualListLayout.setVirtualEnabled },
+		{ name = "ListFillDirection", fn = VirtualListLayout.setVirtualFillDirection },
+		{ name = "ListHorizontalAlignment", fn = VirtualListLayout.setVirtualHorizontalAlignment },
+		{ name = "ListHorizontalFlex", fn = VirtualListLayout.setVirtualHorizontalFlex },
+		{ name = "ListItemLineAlignment", fn = VirtualListLayout.setVirtualItemLineAlignment },
+		{ name = "ListPadding", fn = VirtualListLayout.setVirtualPadding },
+		{ name = "ListSortOrder", fn = VirtualListLayout.setVirtualSortOrder },
+		{ name = "ListVerticalAlignment", fn = VirtualListLayout.setVirtualVerticalAlignment },
+		{ name = "ListVerticalFlex", fn = VirtualListLayout.setVirtualVerticalFlex },
+		{ name = "ListWraps", fn = VirtualListLayout.setVirtualWraps },
+
+		{ name = "GridLayoutEnabled", fn = VirtualGridLayout.setVirtualEnabled },
+		{ name = "GridCellSize", fn = VirtualGridLayout.setVirtualCellSize },
+		{ name = "GridCellPadding", fn = VirtualGridLayout.setVirtualCellPadding },
+		{ name = "GridFillDirection", fn = VirtualGridLayout.setVirtualFillDirection },
+		{ name = "GridFillDirectionMaxCells", fn = VirtualGridLayout.setVirtualFillDirectionMaxCells },
+		{ name = "GridHorizontalAlignment", fn = VirtualGridLayout.setVirtualHorizontalAlignment },
+		{ name = "GridSortOrder", fn = VirtualGridLayout.setVirtualSortOrder },
+		{ name = "GridStartCorner", fn = VirtualGridLayout.setVirtualStartCorner },
+		{ name = "GridVerticalAlignment", fn = VirtualGridLayout.setVirtualVerticalAlignment },
+	},
+}
+
+CanvasGroup.funcs = {
+	onEvent = OnEvent,
+}
+
+return CanvasGroup
