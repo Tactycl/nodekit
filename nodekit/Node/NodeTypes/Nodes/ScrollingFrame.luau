@@ -229,7 +229,7 @@ ScrollingFrame.properties = {
 }
 
 ScrollingFrame.funcs = {
-	onEvent = OnEvent,
+	_onEvent = OnEvent,
 }
 
 return ScrollingFrame

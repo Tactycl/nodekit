@@ -193,7 +193,7 @@ CanvasGroup.properties = {
 }
 
 CanvasGroup.funcs = {
-	onEvent = OnEvent,
+	_onEvent = OnEvent,
 }
 
 return CanvasGroup

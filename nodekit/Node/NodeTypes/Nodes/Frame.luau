@@ -193,7 +193,7 @@ Frame.properties = {
 }
 
 Frame.funcs = {
-	onEvent = OnEvent,
+	_onEvent = OnEvent,
 }
 
 return Frame

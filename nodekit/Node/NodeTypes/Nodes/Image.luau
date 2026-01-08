@@ -170,7 +170,7 @@ Image.properties = {
 }
 
 Image.funcs = {
-	onEvent = OnEvent,
+	_onEvent = OnEvent,
 }
 
 return Image

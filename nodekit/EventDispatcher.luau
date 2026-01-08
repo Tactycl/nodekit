@@ -79,7 +79,10 @@ function EventDispatcher:_handleNode(node, event)
 		node:_dispatchEvent(event)
 		return
 	end
-	if node.onEvent and typeof(node.onEvent) == "function" then
+	if typeof(node._onEvent) == "function" then
+		node:_onEvent(event)
+	end
+	if typeof(node.onEvent) == "function" then
 		node:onEvent(event)
 		return
 	end

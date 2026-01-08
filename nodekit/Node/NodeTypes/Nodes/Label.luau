@@ -197,7 +197,7 @@ Label.properties = {
 }
 
 Label.funcs = {
-	onEvent = OnEvent,
+	_onEvent = OnEvent,
 }
 
 return Label

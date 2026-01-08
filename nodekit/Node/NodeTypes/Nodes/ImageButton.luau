@@ -195,7 +195,7 @@ ImageButton.properties = {
 }
 
 ImageButton.funcs = {
-	onEvent = OnEvent,
+	_onEvent = OnEvent,
 	click = function(self)
 		safeCall(self, "onClicked")
 	end,

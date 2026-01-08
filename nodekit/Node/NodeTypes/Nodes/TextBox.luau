@@ -209,7 +209,7 @@ TextBox.properties = {
 }
 
 TextBox.funcs = {
-	onEvent = OnEvent,
+	_onEvent = OnEvent,
 	captureFocus = function(self)
 		self._instance:CaptureFocus()
 		self:onFocused()
