@@ -150,6 +150,10 @@ end
 function Director:popScene()
 	local outgoing = table.remove(self.sceneStack)
 	local incoming = self.sceneStack[#self.sceneStack]
+	if not incoming then
+		return
+	end
+
 	self.nextScene = incoming
 
 	if outgoing then
@@ -279,10 +283,15 @@ function Director:popSceneWithTransition(t, transitionScene)
 	if self._transitionInProgress then
 		return
 	end
-	self._transitionInProgress = true
 
 	local outgoing = self.runningScene
 	local incoming = self.sceneStack[#self.sceneStack - 1]
+
+	if not incoming then
+		return
+	end
+
+	self._transitionInProgress = true
 	self.nextScene = incoming
 
 	outgoing:setSceneType(Scene.Type.TRANSITION)
