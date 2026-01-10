@@ -10,6 +10,7 @@ end
 local function ensureConstraint(self)
 	if not self._listLayout then
 		self._listLayout = Instance.new("UIListLayout")
+		self._listLayout.SortOrder = Enum.SortOrder.LayoutOrder
 		self._listLayout.Parent = self._instance
 	end
 	return self._listLayout
@@ -67,20 +68,6 @@ ListLayout.getVirtualVerticalAlignment = function(self)
 		return self._listLayout.VerticalAlignment
 	end
 	return Enum.VerticalAlignment.Center
-end
-
-ListLayout.setVirtualSortOrder = function(self, sortOrder)
-	if typeof(sortOrder) == "EnumItem" and sortOrder.EnumType == Enum.SortOrder then
-		local c = ensureConstraint(self)
-		c.SortOrder = sortOrder
-	end
-end
-
-ListLayout.getVirtualSortOrder = function(self)
-	if self._listLayout then
-		return self._listLayout.SortOrder
-	end
-	return Enum.SortOrder.LayoutOrder
 end
 
 ListLayout.setVirtualPadding = function(self, padding)

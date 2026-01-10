@@ -10,6 +10,7 @@ end
 local function ensureConstraint(self)
 	if not self._gridLayout then
 		self._gridLayout = Instance.new("UIGridLayout")
+		self._gridLayout.SortOrder = Enum.SortOrder.LayoutOrder
 		self._gridLayout.Parent = self._instance
 	end
 	return self._gridLayout
@@ -81,20 +82,6 @@ GridLayout.getVirtualFillDirectionMaxCells = function(self)
 		return self._gridLayout.FillDirectionMaxCells
 	end
 	return 0
-end
-
-GridLayout.setVirtualSortOrder = function(self, sortOrder)
-	if typeof(sortOrder) == "EnumItem" and sortOrder.EnumType == Enum.SortOrder then
-		local c = ensureConstraint(self)
-		c.SortOrder = sortOrder
-	end
-end
-
-GridLayout.getVirtualSortOrder = function(self)
-	if self._gridLayout then
-		return self._gridLayout.SortOrder
-	end
-	return Enum.SortOrder.LayoutOrder
 end
 
 GridLayout.setVirtualStartCorner = function(self, startCorner)
