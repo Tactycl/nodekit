@@ -5,7 +5,7 @@ local nodekit = require(ReplicatedStorage.Packages.nodekit)
 local FlippableImage = nodekit.Node:inherit()
 
 local function updateImageRect(self)
-	local instance = self:getRblxInstance()
+  local instance = self:getRblxInstance()
 
   local imageSize = Vector2.new(self._width, self._height)
   local flipX = self._flipX and 1 or 0
