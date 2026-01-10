@@ -1,0 +1,73 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local nodekit = require(ReplicatedStorage.Packages.nodekit)
+
+local FlippableImage = nodekit.Node:inherit()
+
+local function updateImageRect(self)
+	local instance = self:getRblxInstance()
+
+  local imageSize = Vector2.new(self._width, self._height)
+  local flipX = self._flipX and 1 or 0
+  local flipY = self._flipY and 1 or 0
+  local imageRectOffset = self._rectOffset
+
+  instance.ImageRectOffset = imageRectOffset + imageSize * Vector2.new(flipX, flipY)
+  instance.ImageRectSize = imageSize * Vector2.new(-(flipX - 0.5) * 2, -(flipY - 0.5) * 2)
+end
+
+function FlippableImage:create(image: { image: string, width: number, height: number }?)
+  local inst = setmetatable(nodekit.Node.Image:create(image and image.image), FlippableImage)
+  
+  inst._width = image and image.width or 0
+  inst._height = image and image.height or 0
+  inst._flipX = false
+  inst._flipY = false
+  inst._rectOffset = Vector2.zero
+  inst:setBackgroundTransparency(1)
+    :setType("FlippableImage")
+
+  updateImageRect(inst)
+
+  return inst
+end
+
+function FlippableImage:setImage(image: { image: string, width: number, height: number })
+  if typeof(image) == "table" and typeof(image.image) == "string" and typeof(image.width) == "number" and typeof(image.height) == "number" then
+    local instance = self:getRblxInstance()
+    instance.Image = image.image
+    self._width = image.width
+    self._height = image.height
+  end
+  return self
+end
+
+function FlippableImage:setFlipX(flipX: boolean)
+  if typeof(flipX) == "boolean" then
+    self._flipX = flipX
+		updateImageRect(self)
+  end
+  return self
+end
+
+function FlippableImage:setFlipY(flipY: boolean)
+	if typeof(flipY) == "boolean" then
+		self._flipY = flipY
+    updateImageRect(self)
+	end
+	return self
+end
+
+function FlippableImage:setImageRectOffset(imageRectOffset: Vector2)
+  if typeof(imageRectOffset) == "Vector2" then
+    self._rectOffset = imageRectOffset
+    updateImageRect(self)
+  end
+  return self
+end
+
+function FlippableImage:setImageRectSize(imageRectSize: Vector2) -- Handled internally, should not be used
+	return self
+end
+
+return FlippableImage
