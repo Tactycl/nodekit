@@ -45,17 +45,17 @@ end
 function FlippableImage:setFlipX(flipX: boolean)
   if typeof(flipX) == "boolean" then
     self._flipX = flipX
-		updateImageRect(self)
+    updateImageRect(self)
   end
   return self
 end
 
 function FlippableImage:setFlipY(flipY: boolean)
-	if typeof(flipY) == "boolean" then
-		self._flipY = flipY
+  if typeof(flipY) == "boolean" then
+    self._flipY = flipY
     updateImageRect(self)
-	end
-	return self
+  end
+  return self
 end
 
 function FlippableImage:setImageRectOffset(imageRectOffset: Vector2)
@@ -67,7 +67,7 @@ function FlippableImage:setImageRectOffset(imageRectOffset: Vector2)
 end
 
 function FlippableImage:setImageRectSize(imageRectSize: Vector2) -- Handled internally, should not be used
-	return self
+  return self
 end
 
 return FlippableImage
