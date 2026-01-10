@@ -51,10 +51,10 @@ function TransitionFade:run(duration: number, incoming: any, outgoing: any, fini
 	local tweenIn = overlay:tween(half, Enum.EasingStyle.Quad, Enum.EasingDirection.Out):toBackgroundTransparency(0)
 	local tweenOut = overlay:tween(half, Enum.EasingStyle.Quad, Enum.EasingDirection.In):toBackgroundTransparency(1)
 
-	incoming:removeFromParent()
+	incoming:setVisible(false)
 	tweenIn:onCompleted(function()
 		if outgoing then
-			outgoing:removeFromParent()
+			outgoing:setVisible(false)
 		end
 
 		tweenOut:onCompleted(function()
@@ -62,7 +62,7 @@ function TransitionFade:run(duration: number, incoming: any, outgoing: any, fini
 			finalize()
 		end)
 
-		parent:addChild(incoming)
+		incoming:setVisible(true)
 		tweenOut:play()
 	end)
 
