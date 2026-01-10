@@ -35,7 +35,7 @@ function TransitionFade:run(duration: number, incoming: any, outgoing: any, fini
 		return
 	end
 
-	local overlay = nodekit.Node.Frame:create("TransitionFadeOverlay")
+	local overlay = nodekit.Node.Frame:create()
 		:setSize(UDim2.fromScale(1, 1))
 		:setPosition(UDim2.fromScale(0.5, 0.5))
 		:setAnchorPoint(Vector2.new(0.5, 0.5))
@@ -43,15 +43,18 @@ function TransitionFade:run(duration: number, incoming: any, outgoing: any, fini
 		:setBackgroundTransparency(1)
 		:setBorderSizePixel(0)
 		:setActive(false)
+		:setId("transition-overlay")
+		:setType("TransitionFade")
 	parent:addChild(overlay)
 
 	local half = duration * 0.5
 	local tweenIn = overlay:tween(half, Enum.EasingStyle.Quad, Enum.EasingDirection.Out):toBackgroundTransparency(0)
 	local tweenOut = overlay:tween(half, Enum.EasingStyle.Quad, Enum.EasingDirection.In):toBackgroundTransparency(1)
 
+	incoming:removeFromParent()
 	tweenIn:onCompleted(function()
 		if outgoing then
-			outgoing:setVisible(false)
+			outgoing:removeFromParent()
 		end
 
 		tweenOut:onCompleted(function()
@@ -59,7 +62,7 @@ function TransitionFade:run(duration: number, incoming: any, outgoing: any, fini
 			finalize()
 		end)
 
-		incoming:setVisible(true)
+		parent:addChild(incoming)
 		tweenOut:play()
 	end)
 
