@@ -283,6 +283,16 @@ function Node:getChildren()
 	return table.freeze(table.clone(self._children))
 end
 
+function Node:getChildrenByType(type: string)
+	local children = {}
+	for _, childNode in self._children do
+		if childNode._type == type then
+			table.insert(children, childNode)
+		end
+	end
+	return table.freeze(children)
+end
+
 function Node:getChildById(id: string, i: number?)
 	local currentPointerIndex = 0
 	for _, childNode in self._children do
