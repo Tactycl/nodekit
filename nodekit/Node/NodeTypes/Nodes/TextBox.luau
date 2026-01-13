@@ -1,3 +1,5 @@
+local safeCall = require("../../../util/safeCall")
+
 local VirtualCorners = require("../Virtuals/Corners")
 local VirtualScale = require("../Virtuals/Scale")
 local VirtualPadding = require("../Virtuals/Padding")
@@ -212,11 +214,11 @@ TextBox.funcs = {
 	_onEvent = OnEvent,
 	captureFocus = function(self)
 		self._instance:CaptureFocus()
-		self:onFocused()
+		safeCall(self, "onFocused")
 	end,
 	releaseFocus = function(self)
 		self._instance:ReleaseFocus()
-		self:onFocusLost()
+		safeCall(self, "onFocusLost")
 	end,
 	isFocused = function(self)
 		return self._instance:IsFocused()
