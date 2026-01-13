@@ -8,7 +8,7 @@ local VirtualFlexItem = require("../Virtuals/FlexItem")
 local VirtualGradient = require("../Virtuals/Gradient")
 local VirtualSizeConstraint = require("../Virtuals/SizeConstraint")
 
-local OnEvent = require("../Funcs/OnEvent")
+local onPointerEvent = require("../Funcs/onPointerEvent")
 
 local ImageButton = {}
 
@@ -197,7 +197,7 @@ ImageButton.properties = {
 }
 
 ImageButton.funcs = {
-	_onEvent = OnEvent,
+	_onPointerEvent = onPointerEvent,
 	click = function(self)
 		safeCall(self, "onClicked")
 	end,

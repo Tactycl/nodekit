@@ -8,7 +8,7 @@ local VirtualSizeConstraint = require("../Virtuals/SizeConstraint")
 local VirtualListLayout = require("../Virtuals/ListLayout")
 local VirtualGridLayout = require("../Virtuals/GridLayout")
 
-local OnEvent = require("../Funcs/OnEvent")
+local onPointerEvent = require("../Funcs/onPointerEvent")
 
 local CanvasGroup = {}
 
@@ -191,7 +191,7 @@ CanvasGroup.properties = {
 }
 
 CanvasGroup.funcs = {
-	_onEvent = OnEvent,
+	_onPointerEvent = onPointerEvent,
 }
 
 return CanvasGroup

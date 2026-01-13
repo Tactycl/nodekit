@@ -8,7 +8,7 @@ local VirtualFlexItem = require("../Virtuals/FlexItem")
 local VirtualGradient = require("../Virtuals/Gradient")
 local VirtualSizeConstraint = require("../Virtuals/SizeConstraint")
 
-local OnEvent = require("../Funcs/OnEvent")
+local onPointerEvent = require("../Funcs/onPointerEvent")
 
 local TextBox = {}
 
@@ -213,7 +213,7 @@ TextBox.properties = {
 }
 
 TextBox.funcs = {
-	_onEvent = OnEvent,
+	_onPointerEvent = onPointerEvent,
 	captureFocus = function(self)
 		self._instance:CaptureFocus()
 		safeCall(self, "onFocused")

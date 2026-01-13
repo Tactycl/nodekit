@@ -1,21 +1,35 @@
 local UserInputService = game:GetService("UserInputService")
-
 local Event = require("./Event")
 
 local EventDispatcher = {}
 EventDispatcher.__index = EventDispatcher
 
-local function isPointerTarget(inst)
-	if not inst then
-		return false
+local function isGuiObject(inst)
+	return inst ~= nil and inst:IsA("GuiObject")
+end
+
+local function isVisibleInHierarchy(node)
+	while node do
+		local inst = node._instance
+		if inst and inst:IsA("GuiObject") then
+			if inst.Visible ~= true then
+				return false
+			end
+		end
+		node = node._parent
 	end
-	if not inst:IsA("GuiObject") then
-		return false
-	end
-	if inst.Visible ~= true then
+	return true
+end
+
+local function isPointerTarget(node)
+	local inst = node and node._instance
+	if not isGuiObject(inst) then
 		return false
 	end
 	if inst.Active ~= true then
+		return false
+	end
+	if not isVisibleInHierarchy(node) then
 		return false
 	end
 	return true
@@ -27,18 +41,19 @@ local function pointInGui(inst, p)
 	return p.X >= pos.X and p.Y >= pos.Y and p.X <= pos.X + size.X and p.Y <= pos.Y + size.Y
 end
 
-local function isPointerEventType(eventType: string)
-	return eventType == "PointerBegan"
-		or eventType == "PointerEnded"
-		or eventType == "PointerMoved"
-		or eventType == "PointerChanged"
-		or eventType == "InputBegan"
-		or eventType == "InputEnded"
-		or eventType == "InputChanged"
-end
-
 local function isPressInput(input)
 	return input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch
+end
+
+local function isPointerEventType(t)
+	return t == "PointerEnter"
+		or t == "PointerLeave"
+		or t == "PointerMoved"
+		or t == "PointerWheel"
+		or t == "PointerBegan"
+		or t == "PointerEnded"
+		or t == "PointerChanged"
+		or t == "PointerClick"
 end
 
 local function isBlockingLayer(node)
@@ -46,6 +61,11 @@ local function isBlockingLayer(node)
 		and node.isBlockingEventPropagation
 		and typeof(node.isBlockingEventPropagation) == "function"
 		and node:isBlockingEventPropagation() == true
+end
+
+local function canCullByParentBounds(node)
+	local inst = node and node._instance
+	return inst and inst:IsA("GuiObject") and inst.ClipsDescendants == true
 end
 
 function EventDispatcher:create(director)
@@ -60,151 +80,77 @@ function EventDispatcher:create(director)
 	return inst
 end
 
-function EventDispatcher:setEnabled(enabled: boolean)
-	self._enabled = enabled and true or false
-	return self
-end
-
-function EventDispatcher:isEnabled()
-	return self._enabled == true
-end
-
 function EventDispatcher:_getRunningScene()
-	local director = self._director
-	return director and director.getRunningScene and director:getRunningScene()
+	local d = self._director
+	return d and d.getRunningScene and d:getRunningScene()
 end
 
 function EventDispatcher:_handleNode(node, event)
+	if isPointerEventType(event.type) then
+		if typeof(node._onPointerEvent) == "function" then
+			node:_onPointerEvent(event)
+		end
+		return
+	end
+
 	if node._dispatchEvent then
 		node:_dispatchEvent(event)
-		return
-	end
-	if typeof(node._onEvent) == "function" then
-		node:_onEvent(event)
-	end
-	if typeof(node.onEvent) == "function" then
+	elseif typeof(node.onEvent) == "function" then
 		node:onEvent(event)
-		return
 	end
 end
 
-function EventDispatcher:_findTopmostAt(root, pointerPos)
+function EventDispatcher:_dispatchDirect(node, event)
+	if node then
+		self:_handleNode(node, event)
+	end
+	return event
+end
+
+function EventDispatcher:_findTopmostAt(root, pos)
 	local function walk(node)
 		local children = node._children
 		if children then
+			if canCullByParentBounds(node) then
+				local inst = node._instance
+				if inst and inst:IsA("GuiObject") and not pointInGui(inst, pos) then
+					return nil
+				end
+			end
+
 			for i = #children, 1, -1 do
 				local child = children[i]
-				local inst = child and child._instance
-
-				local hit = nil
-
-				if inst and inst:IsA("GuiObject") then
-					if pointInGui(inst, pointerPos) then
-						hit = walk(child)
-						if hit then
-							return hit
-						end
-					end
-				else
-					hit = walk(child)
-					if hit then
-						return hit
-					end
+				local hit = walk(child)
+				if hit then
+					return hit
 				end
-
 				if isBlockingLayer(child) then
 					return nil
 				end
 			end
 		end
 
-		local inst = node._instance
-		if isPointerTarget(inst) and pointInGui(inst, pointerPos) then
+		if isPointerTarget(node) and pointInGui(node._instance, pos) then
 			return node
 		end
 
 		return nil
 	end
 
-	return walk(root)
+	return root and walk(root) or nil
 end
 
-function EventDispatcher:_dispatchDirect(node, event)
-	if not node then
-		return event
-	end
-	self:_handleNode(node, event)
-	return event
-end
-
-function EventDispatcher:_clearFocus()
-	if self._focusLostConn then
-		self._focusLostConn:Disconnect()
-		self._focusLostConn = nil
-	end
-
-	local n = self._focusedNode
-	self._focusedNode = nil
-
-	if n and n.releaseFocus then
-		n:releaseFocus()
-	elseif n and n.onFocusLost then
-		n:onFocusLost()
-	end
-	n._instance.Interactable = false
-end
-
-function EventDispatcher:_setFocus(node)
-	if self._focusedNode == node then
-		return
-	end
-
-	if self._focusedNode then
-		self:_clearFocus()
-	end
-
-	if not node then
-		return
-	end
-
-	if node.captureFocus then
-		node:captureFocus()
-	elseif node.onFocused then
-		node:onFocused()
-	end
-	node._instance.Interactable = true
-
-	self._focusedNode = node
-
-	local inst = node._instance
-	if inst and inst:IsA("TextBox") then
-		self._focusLostConn = inst.FocusLost:Connect(function(...)
-			if self._focusedNode ~= node then
-				return
-			end
-			node._instance.Interactable = false
-			if self._focusLostConn then
-				self._focusLostConn:Disconnect()
-				self._focusLostConn = nil
-			end
-			self._focusedNode = nil
-			if node.onFocusLost then
-				node:onFocusLost(...)
-			end
-		end)
-	end
-end
-
-function EventDispatcher:_updateHover(pointerPos)
+function EventDispatcher:_updateHover(pos)
 	local scene = self:_getRunningScene()
 	if not scene then
 		return
 	end
 
-	local hit = self:_findTopmostAt(scene, pointerPos)
+	local hit = self:_findTopmostAt(scene, pos)
+
 	if hit == self._hoverNode then
 		if hit then
-			self:_dispatchDirect(hit, Event:create("MouseMoved", { position = pointerPos }))
+			self:_dispatchDirect(hit, Event:create("PointerMoved", { position = pos }))
 		end
 		return
 	end
@@ -213,226 +159,124 @@ function EventDispatcher:_updateHover(pointerPos)
 	self._hoverNode = hit
 
 	if prev then
-		self:_dispatchDirect(prev, Event:create("MouseLeave", { position = pointerPos }))
+		self:_dispatchDirect(prev, Event:create("PointerLeave", { position = pos }))
 	end
 
 	if hit then
-		self:_dispatchDirect(hit, Event:create("MouseEnter", { position = pointerPos }))
-		self:_dispatchDirect(hit, Event:create("MouseMoved", { position = pointerPos }))
+		self:_dispatchDirect(hit, Event:create("PointerEnter", { position = pos }))
+		self:_dispatchDirect(hit, Event:create("PointerMoved", { position = pos }))
 	end
 end
 
-function EventDispatcher:_dispatchWheel(pointerPos, wheelDelta)
+function EventDispatcher:_dispatchWheel(pos, delta)
 	local scene = self:_getRunningScene()
 	if not scene then
 		return
 	end
 
-	local hit = self:_findTopmostAt(scene, pointerPos)
-	if not hit then
-		return
+	local hit = self:_findTopmostAt(scene, pos)
+	if hit then
+		self:_dispatchDirect(
+			hit,
+			Event:create("PointerWheel", {
+				position = pos,
+				delta = delta,
+			})
+		)
 	end
-
-	local t = wheelDelta > 0 and "MouseWheelForward" or "MouseWheelBackward"
-	self:_dispatchDirect(hit, Event:create(t, { position = pointerPos, delta = wheelDelta }))
 end
 
-function EventDispatcher:dispatch(event)
-	if not self._enabled then
-		return event
+function EventDispatcher:_resolveInputPosition(input)
+	if input.Position then
+		return Vector2.new(input.Position.X, input.Position.Y)
 	end
-
-	local scene = self:_getRunningScene()
-	if not scene then
-		return event
-	end
-
-	local pointerPos = nil
-	if isPointerEventType(event.type) then
-		local payload = event.payload
-		if payload and payload.position then
-			pointerPos = payload.position
-		else
-			pointerPos = UserInputService:GetMouseLocation()
-		end
-	end
-
-	local function walk(node)
-		if event:isConsumed() then
-			return true
-		end
-
-		local children = node._children
-		if children then
-			for i = #children, 1, -1 do
-				local child = children[i]
-
-				if pointerPos then
-					local inst = child and child._instance
-					if inst and inst:IsA("GuiObject") then
-						if pointInGui(inst, pointerPos) then
-							if walk(child) then
-								return true
-							end
-						end
-					else
-						if walk(child) then
-							return true
-						end
-					end
-				else
-					if walk(child) then
-						return true
-					end
-				end
-
-				if isBlockingLayer(child) then
-					return true
-				end
-			end
-		end
-
-		if pointerPos then
-			local inst = node._instance
-			if isPointerTarget(inst) and pointInGui(inst, pointerPos) then
-				self:_handleNode(node, event)
-			end
-		else
-			self:_handleNode(node, event)
-		end
-
-		return event:isConsumed()
-	end
-
-	walk(scene)
-	return event
+	return UserInputService:GetMouseLocation()
 end
 
-function EventDispatcher:dispatchToSubtree(root, event)
-	if not self._enabled then
-		return event
-	end
-	if not root then
-		return event
-	end
-
-	local function walk(node)
-		if event:isConsumed() then
-			return true
-		end
-
-		self:_handleNode(node, event)
-
-		local children = node._children
-		if children then
-			for _, child in children do
-				if walk(child) then
-					return true
-				end
-			end
-		end
-
-		return event:isConsumed()
-	end
-
-	walk(root)
-	return event
-end
-
-function EventDispatcher:dispatchBroadcast(event)
-	local scene = self:_getRunningScene()
-	return self:dispatchToSubtree(scene, event)
+function EventDispatcher:_makePayload(input, processed, pos)
+	return {
+		input = input,
+		gameProcessed = processed,
+		position = pos,
+	}
 end
 
 function EventDispatcher:bindUserInput()
-	self._conns[#self._conns + 1] = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	self._conns[#self._conns + 1] = UserInputService.InputBegan:Connect(function(input, gp)
 		if not self._enabled then
 			return
 		end
 
-		local pos = UserInputService:GetMouseLocation()
-		local payload = {
-			input = input,
-			gameProcessed = gameProcessed,
-			position = (input.Position ~= nil and Vector2.new(input.Position.X, input.Position.Y)) or pos,
-		}
+		local pos = self:_resolveInputPosition(input)
+		local payload = self:_makePayload(input, gp, pos)
 
-		self:_updateHover(payload.position)
+		self:_updateHover(pos)
 
 		local scene = self:_getRunningScene()
-		local hit = scene and self:_findTopmostAt(scene, payload.position) or nil
+		local hit = scene and self:_findTopmostAt(scene, pos)
 
-		if hit and isPressInput(input) then
+		if isPressInput(input) then
 			self._pressNode = hit
-			if hit.captureFocus then
-				self:_setFocus(hit)
-			else
-				if self._focusedNode then
-					self:_clearFocus()
-				end
+			if hit then
+				self:_dispatchDirect(hit, Event:create("PointerBegan", payload))
 			end
-		elseif isPressInput(input) then
-			if self._focusedNode then
-				self:_clearFocus()
-			end
-			self._pressNode = nil
 		end
 
-		self:dispatch(Event:create("InputBegan", payload))
+		self:_handleNode(scene, Event:create("InputBegan", payload))
 	end)
 
-	self._conns[#self._conns + 1] = UserInputService.InputChanged:Connect(function(input, gameProcessed)
+	self._conns[#self._conns + 1] = UserInputService.InputChanged:Connect(function(input, gp)
 		if not self._enabled then
 			return
 		end
 
-		local pos = UserInputService:GetMouseLocation()
-		local payload = {
-			input = input,
-			gameProcessed = gameProcessed,
-			position = (input.Position ~= nil and Vector2.new(input.Position.X, input.Position.Y)) or pos,
-		}
+		local pos = self:_resolveInputPosition(input)
+		local payload = self:_makePayload(input, gp, pos)
 
-		if input.UserInputType == Enum.UserInputType.MouseMovement then
-			self:_updateHover(payload.position)
-		elseif input.UserInputType == Enum.UserInputType.MouseWheel then
+		if input.UserInputType == Enum.UserInputType.MouseWheel then
 			local d = input.Position and input.Position.Z or 0
 			if d ~= 0 then
-				self:_dispatchWheel(payload.position, d)
+				self:_dispatchWheel(pos, d)
 			end
 		else
-			self:_updateHover(payload.position)
+			self:_updateHover(pos)
 		end
 
-		self:dispatch(Event:create("InputChanged", payload))
+		local scene = self:_getRunningScene()
+		local hit = scene and self:_findTopmostAt(scene, pos)
+		if hit then
+			self:_dispatchDirect(hit, Event:create("PointerChanged", payload))
+		end
+
+		self:_handleNode(scene, Event:create("InputChanged", payload))
 	end)
 
-	self._conns[#self._conns + 1] = UserInputService.InputEnded:Connect(function(input, gameProcessed)
+	self._conns[#self._conns + 1] = UserInputService.InputEnded:Connect(function(input, gp)
 		if not self._enabled then
 			return
 		end
 
-		local pos = UserInputService:GetMouseLocation()
-		local payload = {
-			input = input,
-			gameProcessed = gameProcessed,
-			position = (input.Position ~= nil and Vector2.new(input.Position.X, input.Position.Y)) or pos,
-		}
-
-		self:_updateHover(payload.position)
-
 		local scene = self:_getRunningScene()
-		local hit = scene and self:_findTopmostAt(scene, payload.position) or nil
-		payload.isOver = (hit ~= nil)
+		local pos = self:_resolveInputPosition(input)
+		local payload = self:_makePayload(input, gp, pos)
 
-		if isPressInput(input) and self._pressNode then
-			payload.isOver = (hit == self._pressNode)
-			self:dispatchToSubtree(self._pressNode, Event:create("InputEnded", payload))
+		self:_updateHover(pos)
+
+		if isPressInput(input) then
+			local hit = scene and self:_findTopmostAt(scene, pos)
+
+			if hit then
+				self:_dispatchDirect(hit, Event:create("PointerEnded", payload))
+			end
+
+			if hit and hit == self._pressNode then
+				self:_dispatchDirect(hit, Event:create("PointerClick", payload))
+			end
+
 			self._pressNode = nil
-			return
 		end
 
-		self:dispatch(Event:create("InputEnded", payload))
+		self:_handleNode(scene, Event:create("InputEnded", payload))
 	end)
 
 	return self
@@ -440,15 +284,12 @@ end
 
 function EventDispatcher:destroy()
 	for _, c in self._conns do
-		if typeof(c) == "RBXScriptConnection" then
-			c:Disconnect()
-		end
+		c:Disconnect()
 	end
 	self._conns = {}
-	self._director = nil
 	self._hoverNode = nil
 	self._pressNode = nil
-	self:_clearFocus()
+	self._director = nil
 end
 
 return EventDispatcher
