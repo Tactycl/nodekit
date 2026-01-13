@@ -150,6 +150,34 @@ Padding.setVirtualBottom = function(self, v)
 	end
 end
 
+Padding.setVirtualHorizontal = function(self, v)
+	if v == nil then
+		destroyPadding(self)
+		return
+	end
+
+	if typeof(v) ~= "UDim" then
+		return
+	end
+
+	Padding.setVirtualLeft(self, v)
+	Padding.setVirtualRight(self, v)
+end
+
+Padding.setVirtualVertical = function(self, v)
+	if v == nil then
+		destroyPadding(self)
+		return
+	end
+
+	if typeof(v) ~= "UDim" then
+		return
+	end
+
+	Padding.setVirtualTop(self, v)
+	Padding.setVirtualBottom(self, v)
+end
+
 Padding.setVirtualAll = function(self, v)
 	if v == nil then
 		destroyPadding(self)

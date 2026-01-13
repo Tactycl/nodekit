@@ -188,6 +188,8 @@ TextBox.properties = {
 		{ name = "PaddingRight", fn = VirtualPadding.setVirtualRight },
 		{ name = "PaddingTop", fn = VirtualPadding.setVirtualTop },
 		{ name = "PaddingBottom", fn = VirtualPadding.setVirtualBottom },
+		{ name = "PaddingHorizontal", fn = VirtualPadding.setVirtualHorizontal },
+		{ name = "PaddingVertical", fn = VirtualPadding.setVirtualVertical },
 		{ name = "Padding", fn = VirtualPadding.setVirtualAll },
 		
 		{ name = "AspectRatioEnabled", fn = VirtualAspectRatio.setVirtualEnabled },
