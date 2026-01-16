@@ -3,6 +3,7 @@ return {
 	Scene = require("@self/Scene"),
 	Layer = require("@self/Layer"),
 	Node = require("@self/Node"),
+	Event = require("@self/Event"),
 	EventDispatcher = require("@self/EventDispatcher"),
 	Transition = require("@self/Transition"),
 }
