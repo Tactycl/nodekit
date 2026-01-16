@@ -128,6 +128,7 @@ CanvasGroup.properties = {
 		{ name = "ListVerticalAlignment", fn = VirtualListLayout.getVirtualVerticalAlignment },
 		{ name = "ListVerticalFlex", fn = VirtualListLayout.getVirtualVerticalFlex },
 		{ name = "ListWraps", fn = VirtualListLayout.getVirtualWraps },
+		{ name = "ListAbsoluteContentSize", fn = VirtualListLayout.getVirtualAbsoluteContentSize },
 
 		{ name = "GridLayoutEnabled", fn = VirtualGridLayout.getVirtualEnabled },
 		{ name = "GridCellSize", fn = VirtualGridLayout.getVirtualCellSize },
@@ -137,6 +138,9 @@ CanvasGroup.properties = {
 		{ name = "GridHorizontalAlignment", fn = VirtualGridLayout.getVirtualHorizontalAlignment },
 		{ name = "GridStartCorner", fn = VirtualGridLayout.getVirtualStartCorner },
 		{ name = "GridVerticalAlignment", fn = VirtualGridLayout.getVirtualVerticalAlignment },
+		{ name = "GridAbsoluteCellCount", fn = VirtualGridLayout.getVirtualAbsoluteCellCount },
+		{ name = "GridAbsoluteCellSize", fn = VirtualGridLayout.getVirtualAbsoluteCellSize },
+		{ name = "GridAbsoluteContentSize", fn = VirtualGridLayout.getVirtualAbsoluteContentSize },
 	},
 	virtualWriteable = {
 		{ name = "CornerRadius", fn = VirtualCorners.setVirtual },

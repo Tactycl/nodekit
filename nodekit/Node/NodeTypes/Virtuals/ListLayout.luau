@@ -140,4 +140,11 @@ ListLayout.getVirtualItemLineAlignment = function(self)
 	return Enum.ItemLineAlignment.Automatic
 end
 
+ListLayout.getVirtualAbsoluteContentSize = function(self)
+	if self._listLayout then
+		return self._listLayout.AbsoluteContentSize
+	end
+	return Vector2.zero
+end
+
 return ListLayout

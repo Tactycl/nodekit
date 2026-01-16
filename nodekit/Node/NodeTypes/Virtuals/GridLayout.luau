@@ -126,4 +126,25 @@ GridLayout.getVirtualVerticalAlignment = function(self)
 	return Enum.VerticalAlignment.Center
 end
 
+GridLayout.getVirtualAbsoluteCellCount = function(self)
+	if self._gridLayout then
+		return self._gridLayout.AbsoluteCellCount
+	end
+	return Vector2.zero
+end
+
+GridLayout.getVirtualAbsoluteCellSize = function(self)
+	if self._gridLayout then
+		return self._gridLayout.AbsoluteCellSize
+	end
+	return Vector2.zero
+end
+
+GridLayout.getVirtualAbsoluteContentSize = function(self)
+	if self._gridLayout then
+		return self._gridLayout.AbsoluteContentSize
+	end
+	return Vector2.zero
+end
+
 return GridLayout
