@@ -97,8 +97,8 @@ function Tween:create(node, time, easingStyle, easingDirection)
 
 	inst._node = node
 	inst._time = (typeof(time) == "number" and time) or 0
-	inst._style = easingStyle or Enum.EasingStyle.Quad
-	inst._dir = easingDirection or Enum.EasingDirection.Out
+	inst._style = easingStyle or Enum.EasingStyle.Linear
+	inst._dir = easingDirection or Enum.EasingDirection.In
 
 	inst._goals = {}
 
