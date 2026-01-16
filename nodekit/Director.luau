@@ -95,6 +95,10 @@ function Director:setEventDispatcher(eventDispatcher)
 	self.eventDispatcher = eventDispatcher
 end
 
+function Director:getScale()
+	return self.root:getScale()
+end
+
 function Director:runWithScene(scene)
 	self.sceneStack = { scene }
 	self.runningScene = scene
