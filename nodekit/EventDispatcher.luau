@@ -68,24 +68,16 @@ local function canCullByParentBounds(node)
 	return inst and inst:IsA("GuiObject") and inst.ClipsDescendants == true
 end
 
-function EventDispatcher:create(director)
-	local inst = setmetatable({}, EventDispatcher)
-	inst._director = director
-	inst._enabled = true
-	inst._conns = {}
-	inst._hoverNode = nil
-	inst._pressNode = nil
-	inst._focusedNode = nil
-	inst._focusLostConn = nil
-	return inst
-end
-
-function EventDispatcher:_getRunningScene()
+local function getRunningScene(self)
 	local d = self._director
 	return d and d.getRunningScene and d:getRunningScene()
 end
 
-function EventDispatcher:_handleNode(node, event)
+local function handleNode(self, node, event)
+	if not node then
+		return
+	end
+
 	if isPointerEventType(event.type) then
 		if typeof(node._onPointerEvent) == "function" then
 			node:_onPointerEvent(event)
@@ -100,14 +92,14 @@ function EventDispatcher:_handleNode(node, event)
 	end
 end
 
-function EventDispatcher:_dispatchDirect(node, event)
+local function dispatchDirect(self, node, event)
 	if node then
-		self:_handleNode(node, event)
+		handleNode(self, node, event)
 	end
 	return event
 end
 
-function EventDispatcher:_findTopmostAt(root, pos)
+local function findTopmostAt(root, pos)
 	local function walk(node)
 		local children = node._children
 		if children then
@@ -140,17 +132,32 @@ function EventDispatcher:_findTopmostAt(root, pos)
 	return root and walk(root) or nil
 end
 
-function EventDispatcher:_updateHover(pos)
-	local scene = self:_getRunningScene()
+local function resolveInputPosition(self, input)
+	if input.Position then
+		return Vector2.new(input.Position.X, input.Position.Y)
+	end
+	return UserInputService:GetMouseLocation()
+end
+
+local function makePayload(self, input, processed, pos)
+	return {
+		input = input,
+		gameProcessed = processed,
+		position = pos,
+	}
+end
+
+local function updateHover(self, pos)
+	local scene = getRunningScene(self)
 	if not scene then
 		return
 	end
 
-	local hit = self:_findTopmostAt(scene, pos)
+	local hit = findTopmostAt(scene, pos)
 
 	if hit == self._hoverNode then
 		if hit then
-			self:_dispatchDirect(hit, Event:create("PointerMoved", { position = pos }))
+			dispatchDirect(self, hit, Event:create("PointerMoved", { position = pos }))
 		end
 		return
 	end
@@ -159,24 +166,25 @@ function EventDispatcher:_updateHover(pos)
 	self._hoverNode = hit
 
 	if prev then
-		self:_dispatchDirect(prev, Event:create("PointerLeave", { position = pos }))
+		dispatchDirect(self, prev, Event:create("PointerLeave", { position = pos }))
 	end
 
 	if hit then
-		self:_dispatchDirect(hit, Event:create("PointerEnter", { position = pos }))
-		self:_dispatchDirect(hit, Event:create("PointerMoved", { position = pos }))
+		dispatchDirect(self, hit, Event:create("PointerEnter", { position = pos }))
+		dispatchDirect(self, hit, Event:create("PointerMoved", { position = pos }))
 	end
 end
 
-function EventDispatcher:_dispatchWheel(pos, delta)
-	local scene = self:_getRunningScene()
+local function dispatchWheel(self, pos, delta)
+	local scene = getRunningScene(self)
 	if not scene then
 		return
 	end
 
-	local hit = self:_findTopmostAt(scene, pos)
+	local hit = findTopmostAt(scene, pos)
 	if hit then
-		self:_dispatchDirect(
+		dispatchDirect(
+			self,
 			hit,
 			Event:create("PointerWheel", {
 				position = pos,
@@ -186,19 +194,50 @@ function EventDispatcher:_dispatchWheel(pos, delta)
 	end
 end
 
-function EventDispatcher:_resolveInputPosition(input)
-	if input.Position then
-		return Vector2.new(input.Position.X, input.Position.Y)
+local function dispatchDownTree(self, root, event)
+	if not root or not event then
+		return event
 	end
-	return UserInputService:GetMouseLocation()
+
+	local function walk(node)
+		local children = node._children
+		if children then
+			for i = #children, 1, -1 do
+				local child = children[i]
+				walk(child)
+
+				if event.isConsumed and typeof(event.isConsumed) == "function" and event:isConsumed() then
+					return
+				end
+
+				if isBlockingLayer(child) then
+					return
+				end
+			end
+		end
+
+		handleNode(self, node, event)
+	end
+
+	walk(root)
+	return event
 end
 
-function EventDispatcher:_makePayload(input, processed, pos)
-	return {
-		input = input,
-		gameProcessed = processed,
-		position = pos,
-	}
+function EventDispatcher:create(director)
+	local inst = setmetatable({}, EventDispatcher)
+	inst._director = director
+	inst._enabled = true
+	inst._conns = {}
+	inst._hoverNode = nil
+	inst._pressNode = nil
+	inst._focusedNode = nil
+	inst._focusLostConn = nil
+	return inst
+end
+
+function EventDispatcher:dispatch(event, root)
+	local r = root or getRunningScene(self)
+	return dispatchDownTree(self, r, event)
 end
 
 function EventDispatcher:bindUserInput()
@@ -207,22 +246,22 @@ function EventDispatcher:bindUserInput()
 			return
 		end
 
-		local pos = self:_resolveInputPosition(input)
-		local payload = self:_makePayload(input, gp, pos)
+		local pos = resolveInputPosition(self, input)
+		local payload = makePayload(self, input, gp, pos)
 
-		self:_updateHover(pos)
+		updateHover(self, pos)
 
-		local scene = self:_getRunningScene()
-		local hit = scene and self:_findTopmostAt(scene, pos)
+		local scene = getRunningScene(self)
+		local hit = scene and findTopmostAt(scene, pos)
 
 		if isPressInput(input) then
 			self._pressNode = hit
 			if hit then
-				self:_dispatchDirect(hit, Event:create("PointerBegan", payload))
+				dispatchDirect(self, hit, Event:create("PointerBegan", payload))
 			end
 		end
 
-		self:_handleNode(scene, Event:create("InputBegan", payload))
+		handleNode(self, scene, Event:create("InputBegan", payload))
 	end)
 
 	self._conns[#self._conns + 1] = UserInputService.InputChanged:Connect(function(input, gp)
@@ -230,25 +269,25 @@ function EventDispatcher:bindUserInput()
 			return
 		end
 
-		local pos = self:_resolveInputPosition(input)
-		local payload = self:_makePayload(input, gp, pos)
+		local pos = resolveInputPosition(self, input)
+		local payload = makePayload(self, input, gp, pos)
 
 		if input.UserInputType == Enum.UserInputType.MouseWheel then
 			local d = input.Position and input.Position.Z or 0
 			if d ~= 0 then
-				self:_dispatchWheel(pos, d)
+				dispatchWheel(self, pos, d)
 			end
 		else
-			self:_updateHover(pos)
+			updateHover(self, pos)
 		end
 
-		local scene = self:_getRunningScene()
-		local hit = scene and self:_findTopmostAt(scene, pos)
+		local scene = getRunningScene(self)
+		local hit = scene and findTopmostAt(scene, pos)
 		if hit then
-			self:_dispatchDirect(hit, Event:create("PointerChanged", payload))
+			dispatchDirect(self, hit, Event:create("PointerChanged", payload))
 		end
 
-		self:_handleNode(scene, Event:create("InputChanged", payload))
+		handleNode(self, scene, Event:create("InputChanged", payload))
 	end)
 
 	self._conns[#self._conns + 1] = UserInputService.InputEnded:Connect(function(input, gp)
@@ -256,27 +295,27 @@ function EventDispatcher:bindUserInput()
 			return
 		end
 
-		local scene = self:_getRunningScene()
-		local pos = self:_resolveInputPosition(input)
-		local payload = self:_makePayload(input, gp, pos)
+		local scene = getRunningScene(self)
+		local pos = resolveInputPosition(self, input)
+		local payload = makePayload(self, input, gp, pos)
 
-		self:_updateHover(pos)
+		updateHover(self, pos)
 
 		if isPressInput(input) then
-			local hit = scene and self:_findTopmostAt(scene, pos)
+			local hit = scene and findTopmostAt(scene, pos)
 
 			if hit then
-				self:_dispatchDirect(hit, Event:create("PointerEnded", payload))
+				dispatchDirect(self, hit, Event:create("PointerEnded", payload))
 			end
 
 			if hit and hit == self._pressNode then
-				self:_dispatchDirect(hit, Event:create("PointerClick", payload))
+				dispatchDirect(self, hit, Event:create("PointerClick", payload))
 			end
 
 			self._pressNode = nil
 		end
 
-		self:_handleNode(scene, Event:create("InputEnded", payload))
+		handleNode(self, scene, Event:create("InputEnded", payload))
 	end)
 
 	return self
