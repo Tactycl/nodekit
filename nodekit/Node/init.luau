@@ -71,6 +71,15 @@ local function attachToParent(childNode, parentNode, zIndex: number?)
 
 	normalizeGuiSiblingOrder(parentNode)
 	safeCall(parentNode, "onChildAdded", childNode)
+
+	local function walk(node)
+		safeCall(node, "onAncestryChanged")
+		for _, child in node._children do
+			walk(child)
+		end
+	end
+
+	walk(childNode)
 end
 
 local function updateInstanceName(self)
