@@ -237,7 +237,7 @@ function Node:isA(n: string)
 end
 
 function Node:isDescendantOf(otherNode)
-	if self == otherNode then
+	if self == otherNode or typeof(otherNode) ~= "table" or otherNode._instance == nil then
 		return false
 	end
 	return self._instance:IsDescendantOf(otherNode._instance)
