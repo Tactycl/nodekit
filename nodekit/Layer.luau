@@ -64,6 +64,21 @@ function Layer:isBlockingEventPropagation(): boolean
 	return self._blocksEventsBelow == true
 end
 
+function Layer:isTopLayer(): boolean
+	local parent = self:getParent()
+	local detectedSelf = false
+	for _, childNode in parent._children do
+		if childNode == self then
+			detectedSelf = true
+
+		elseif detectedSelf then
+			return false
+		end
+	end
+
+	return detectedSelf
+end
+
 function Layer:onPause() end
 function Layer:onResume() end
 
