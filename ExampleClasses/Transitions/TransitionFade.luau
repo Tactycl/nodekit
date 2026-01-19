@@ -41,7 +41,6 @@ function TransitionFade:run(duration: number, incoming: any, outgoing: any, fini
 		:setAnchorPoint(Vector2.new(0.5, 0.5))
 		:setBackgroundColor3(self._color)
 		:setBackgroundTransparency(1)
-		:setBorderSizePixel(0)
 		:setActive(false)
 		:setId("transition-overlay")
 		:setType("TransitionFade")

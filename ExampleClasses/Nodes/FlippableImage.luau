@@ -24,8 +24,7 @@ function FlippableImage:create(image: { image: string, width: number, height: nu
   inst._flipX = false
   inst._flipY = false
   inst._rectOffset = Vector2.zero
-  inst:setBackgroundTransparency(1)
-    :setType("FlippableImage")
+  inst:setType("FlippableImage")
 
   updateImageRect(inst)
 
