@@ -13,6 +13,13 @@ local Image = {}
 Image.rblxClass = "ImageLabel"
 Image.initParams = { "Image" }
 
+Image.create = function(self)
+	self._instance.BackgroundColor3 = Color3.new(1, 1, 1)
+	self._instance.BackgroundTransparency = 1
+	self._instance.BorderSizePixel = 0
+	self._instance.BorderColor3 = Color3.new(0, 0, 0)
+end
+
 Image.properties = {
 	readable = {
 		"Image",

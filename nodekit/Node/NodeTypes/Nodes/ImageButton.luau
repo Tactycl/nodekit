@@ -18,6 +18,10 @@ ImageButton.initParams = { "Image" }
 ImageButton.create = function(self)
 	self._instance.Interactable = false
 	self._instance.AutoButtonColor = false
+	self._instance.BackgroundColor3 = Color3.new(1, 1, 1)
+	self._instance.BackgroundTransparency = 1
+	self._instance.BorderSizePixel = 0
+	self._instance.BorderColor3 = Color3.new(0, 0, 0)
 end
 
 ImageButton.properties = {

@@ -15,6 +15,12 @@ local CanvasGroup = {}
 CanvasGroup.rblxClass = "CanvasGroup"
 CanvasGroup.initParams = {}
 
+CanvasGroup.create = function(self)
+	self._instance.BackgroundColor3 = Color3.new(1, 1, 1)
+	self._instance.BorderSizePixel = 0
+	self._instance.BorderColor3 = Color3.new(0, 0, 0)
+end
+
 CanvasGroup.properties = {
 	readable = {
 		"GroupColor3",

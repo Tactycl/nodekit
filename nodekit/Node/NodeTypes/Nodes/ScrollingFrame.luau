@@ -15,6 +15,12 @@ local ScrollingFrame = {}
 ScrollingFrame.rblxClass = "ScrollingFrame"
 ScrollingFrame.initParams = {}
 
+ScrollingFrame.create = function(self)
+	self._instance.BackgroundColor3 = Color3.new(1, 1, 1)
+	self._instance.BorderSizePixel = 0
+	self._instance.BorderColor3 = Color3.new(0, 0, 0)
+end
+
 ScrollingFrame.properties = {
 	readable = {
 		"AbsoluteCanvasSize",

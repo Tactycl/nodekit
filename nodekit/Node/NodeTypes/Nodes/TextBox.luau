@@ -19,6 +19,11 @@ TextBox.create = function(self)
 	self._instance.Interactable = false
 	self._instance.ClearTextOnFocus = false
 	self._instance.Text = ""
+	self._instance.BackgroundColor3 = Color3.new(1, 1, 1)
+	self._instance.BorderSizePixel = 0
+	self._instance.BorderColor3 = Color3.new(0, 0, 0)
+	self._instance.TextColor3 = Color3.new(0, 0, 0)
+	self._instance.PlaceholderColor3 = Color3.new(0, 0, 0)
 end
 
 TextBox.properties = {
