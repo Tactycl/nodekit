@@ -1,15 +1,18 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local nodekit = require(ReplicatedStorage.Packages.nodekit)
+local Nodekit = require(ReplicatedStorage.Packages.Nodekit)
 
-local TransitionFade = nodekit.Transition:inherit()
+local Node = Nodekit.Node
+local Transition = Nodekit.Transition
+
+local TransitionFade = Transition:inherit()
 
 type FadeOptions = {
 	color: Color3?,
 }
 
 function TransitionFade:create(opts: FadeOptions?)
-	local inst = setmetatable(nodekit.Transition:create(), TransitionFade)
+	local inst = setmetatable(Transition:create(), TransitionFade)
 	inst._color = (opts and opts.color) or Color3.new(0, 0, 0)
 	return inst
 end
@@ -35,7 +38,7 @@ function TransitionFade:run(duration: number, incoming: any, outgoing: any, fini
 		return
 	end
 
-	local overlay = nodekit.Node.Frame:create()
+	local overlay = Node.Frame:create()
 		:setSize(UDim2.fromScale(1, 1))
 		:setPosition(UDim2.fromScale(0.5, 0.5))
 		:setAnchorPoint(Vector2.new(0.5, 0.5))
