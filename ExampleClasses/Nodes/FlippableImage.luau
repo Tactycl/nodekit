@@ -1,8 +1,10 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local nodekit = require(ReplicatedStorage.Packages.nodekit)
+local Nodekit = require(ReplicatedStorage.Packages.Nodekit)
 
-local FlippableImage = nodekit.Node:inherit()
+local Node = Nodekit.Node
+
+local FlippableImage = Node:inherit()
 
 local function updateImageRect(self)
   local instance = self:getRblxInstance()
@@ -17,7 +19,7 @@ local function updateImageRect(self)
 end
 
 function FlippableImage:create(image: { image: string, width: number, height: number }?)
-  local inst = setmetatable(nodekit.Node.Image:create(image and image.image), FlippableImage)
+  local inst = setmetatable(Node.Image:create(image and image.image), FlippableImage)
   
   inst._width = image and image.width or 0
   inst._height = image and image.height or 0
