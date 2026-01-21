@@ -1,6 +1,7 @@
 local safeCall = require("../../../util/safeCall")
 
 local VirtualCorners = require("../Virtuals/Corners")
+local VirtualTextSize = require("../Virtuals/TextSize")
 local VirtualScale = require("../Virtuals/Scale")
 local VirtualPadding = require("../Virtuals/Padding")
 local VirtualAspectRatio = require("../Virtuals/AspectRatio")
@@ -159,6 +160,9 @@ TextBox.properties = {
 	virtualReadable = {
 		{ name = "CornerRadius", fn = VirtualCorners.getVirtual },
 
+		{ name = "MaxTextSize", fn = VirtualTextSize.getVirtualMax },
+		{ name = "MinTextSize", fn = VirtualTextSize.getVirtualMin },
+
 		{ name = "Scale", fn = VirtualScale.getVirtual },
 
 		{ name = "PaddingLeft", fn = VirtualPadding.getVirtualLeft },
@@ -186,6 +190,9 @@ TextBox.properties = {
 	},
 	virtualWriteable = {
 		{ name = "CornerRadius", fn = VirtualCorners.setVirtual },
+
+		{ name = "MaxTextSize", fn = VirtualTextSize.setVirtualMax },
+		{ name = "MinTextSize", fn = VirtualTextSize.setVirtualMin },
 
 		{ name = "Scale", fn = VirtualScale.setVirtual },
 
