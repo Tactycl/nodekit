@@ -1,9 +1,18 @@
+local Director = require("../../../Director")
+
 local TextSize = {}
+
+local function getDirectorScale()
+	local directorInstance = Director:getInstance()
+	return directorInstance and directorInstance:getScale() or 1
+end
 
 local function destroyConstraint(self)
 	if self._textSizeConstraint then
 		self._textSizeConstraint:Destroy()
 		self._textSizeConstraint = nil
+		self._minTextSize = nil
+		self._maxTextSize = nil
 	end
 end
 
@@ -11,6 +20,8 @@ local function ensureConstraint(self)
 	if not self._textSizeConstraint then
 		self._textSizeConstraint = Instance.new("UITextSizeConstraint")
 		self._textSizeConstraint.Parent = self._instance
+		self._minTextSize = 0
+		self._maxTextSize = math.huge
 	end
 	return self._textSizeConstraint
 end
@@ -18,7 +29,7 @@ end
 TextSize.getVirtualMax = function(self)
 	local c = self._textSizeConstraint
 	if c then
-		return c.MaxTextSize
+		return c.MaxTextSize / getDirectorScale()
 	end
 	return math.huge
 end
@@ -26,7 +37,7 @@ end
 TextSize.getVirtualMin = function(self)
 	local c = self._textSizeConstraint
 	if c then
-		return c.MinTextSize
+		return c.MinTextSize / getDirectorScale()
 	end
 	return 0
 end
@@ -50,10 +61,20 @@ TextSize.setVirtualMax = function(self, v)
 	end
 
 	local c = ensureConstraint(self)
-	c.MaxTextSize = v
+	local newV = v * getDirectorScale()
+
+	if c.MinTextSize > newV then
+		c.MaxTextSize = c.MinTextSize
+
+	else
+		c.MaxTextSize = newV
+	end
 
 	if c.MinTextSize == 0 and c.MaxTextSize == math.huge then
 		destroyConstraint(self)
+
+	else
+		self._maxTextSize = v
 	end
 end
 
@@ -75,14 +96,18 @@ TextSize.setVirtualMin = function(self, v)
 	end
 
 	local c = ensureConstraint(self)
-	c.MinTextSize = v
+	local newV = v * getDirectorScale()
 
-	if c.MaxTextSize < c.MinTextSize then
-		c.MaxTextSize = c.MinTextSize
+	if c.MaxTextSize < newV then
+		c.MaxTextSize = newV
 	end
+	c.MinTextSize = newV
 
 	if c.MinTextSize == 0 and c.MaxTextSize == math.huge then
 		destroyConstraint(self)
+
+	else
+		self._minTextSize =  v
 	end
 end
 

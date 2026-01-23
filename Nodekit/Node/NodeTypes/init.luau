@@ -53,6 +53,10 @@ local function initNodeType(fnNewNode, mod)
 			node._instance.Changed:Connect(function(propertyName)
 				safeCall(node, "onChanged", propertyName, node._instance[propertyName])
 				safeCall(node, ("on%sChanged"):format(propertyName), node._instance[propertyName])
+
+				-- Internal Use
+				safeCall(node, "_onChanged", propertyName, node._instance[propertyName])
+				safeCall(node, ("_on%sChanged"):format(propertyName), node._instance[propertyName])
 			end)
 
 			return node

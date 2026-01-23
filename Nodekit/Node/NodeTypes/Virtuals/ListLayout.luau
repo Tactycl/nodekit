@@ -1,4 +1,11 @@
+local Director = require("../../../Director")
+
 local ListLayout = {}
+
+local function getDirectorScale()
+	local directorInstance = Director:getInstance()
+	return directorInstance and directorInstance:getScale() or 1
+end
 
 local function destroyConstraint(self)
 	if self._listLayout then
@@ -142,7 +149,7 @@ end
 
 ListLayout.getVirtualAbsoluteContentSize = function(self)
 	if self._listLayout then
-		return self._listLayout.AbsoluteContentSize
+		return self._listLayout.AbsoluteContentSize / getDirectorScale()
 	end
 	return Vector2.zero
 end

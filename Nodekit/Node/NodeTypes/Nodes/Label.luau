@@ -8,6 +8,7 @@ local VirtualGradient = require("../Virtuals/Gradient")
 local VirtualSizeConstraint = require("../Virtuals/SizeConstraint")
 
 local onPointerEvent = require("../Funcs/onPointerEvent")
+local onAbsoluteSizeChanged = require("../Funcs/onAbsoluteSizeChanged")
 
 local Label = {}
 
@@ -208,6 +209,7 @@ Label.properties = {
 
 Label.funcs = {
 	_onPointerEvent = onPointerEvent,
+	_onAbsoluteSizeChanged = onAbsoluteSizeChanged,
 }
 
 return Label

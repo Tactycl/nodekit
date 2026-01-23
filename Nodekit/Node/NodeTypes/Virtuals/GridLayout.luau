@@ -1,4 +1,11 @@
+local Director = require("../../../Director")
+
 local GridLayout = {}
+
+local function getDirectorScale()
+	local directorInstance = Director:getInstance()
+	return directorInstance and directorInstance:getScale() or 1
+end
 
 local function destroyConstraint(self)
 	if self._gridLayout then
@@ -135,14 +142,14 @@ end
 
 GridLayout.getVirtualAbsoluteCellSize = function(self)
 	if self._gridLayout then
-		return self._gridLayout.AbsoluteCellSize
+		return self._gridLayout.AbsoluteCellSize / getDirectorScale()
 	end
 	return Vector2.zero
 end
 
 GridLayout.getVirtualAbsoluteContentSize = function(self)
 	if self._gridLayout then
-		return self._gridLayout.AbsoluteContentSize
+		return self._gridLayout.AbsoluteContentSize / getDirectorScale()
 	end
 	return Vector2.zero
 end

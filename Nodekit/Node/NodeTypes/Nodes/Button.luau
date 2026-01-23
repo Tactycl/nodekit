@@ -10,6 +10,7 @@ local VirtualGradient = require("../Virtuals/Gradient")
 local VirtualSizeConstraint = require("../Virtuals/SizeConstraint")
 
 local onPointerEvent = require("../Funcs/onPointerEvent")
+local onAbsoluteSizeChanged = require("../Funcs/onAbsoluteSizeChanged")
 
 local Button = {}
 
@@ -221,6 +222,7 @@ Button.properties = {
 
 Button.funcs = {
 	_onPointerEvent = onPointerEvent,
+	_onAbsoluteSizeChanged = onAbsoluteSizeChanged,
 	click = function(self)
 		safeCall(self, "onClicked")
 	end,

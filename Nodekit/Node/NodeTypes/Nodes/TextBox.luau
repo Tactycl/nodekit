@@ -10,6 +10,7 @@ local VirtualGradient = require("../Virtuals/Gradient")
 local VirtualSizeConstraint = require("../Virtuals/SizeConstraint")
 
 local onPointerEvent = require("../Funcs/onPointerEvent")
+local onAbsoluteSizeChanged = require("../Funcs/onAbsoluteSizeChanged")
 
 local TextBox = {}
 
@@ -226,6 +227,7 @@ TextBox.properties = {
 
 TextBox.funcs = {
 	_onPointerEvent = onPointerEvent,
+	_onAbsoluteSizeChanged = onAbsoluteSizeChanged,
 	captureFocus = function(self)
 		self._instance:CaptureFocus()
 		safeCall(self, "onFocused")

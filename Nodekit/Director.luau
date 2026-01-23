@@ -96,7 +96,8 @@ function Director:setEventDispatcher(eventDispatcher)
 end
 
 function Director:getScale()
-	return self.root:getScale()
+	local v = self.root:getScale()
+	return v > 0 and v
 end
 
 function Director:runWithScene(scene)
