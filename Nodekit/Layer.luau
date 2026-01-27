@@ -79,6 +79,21 @@ function Layer:isTopLayer(): boolean
 	return detectedSelf
 end
 
+function Layer:isBlockedByOtherLayer(): boolean
+	local parent = self:getParent()
+	local detectedSelf = false
+	for _, childNode in parent._children do
+		if childNode == self then
+			detectedSelf = true
+
+		elseif detectedSelf and childNode._blocksEventsBelow then
+			return false
+		end
+	end
+
+	return detectedSelf
+end
+
 function Layer:onPause() end
 function Layer:onResume() end
 
