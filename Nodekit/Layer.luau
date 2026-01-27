@@ -76,7 +76,7 @@ function Layer:isTopLayer(): boolean
 		end
 	end
 
-	return detectedSelf
+	return true
 end
 
 function Layer:isBlockedByOtherLayer(): boolean
@@ -87,11 +87,11 @@ function Layer:isBlockedByOtherLayer(): boolean
 			detectedSelf = true
 
 		elseif detectedSelf and childNode._blocksEventsBelow then
-			return false
+			return true
 		end
 	end
 
-	return detectedSelf
+	return false
 end
 
 function Layer:onPause() end
