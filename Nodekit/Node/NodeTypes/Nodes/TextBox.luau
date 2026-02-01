@@ -228,16 +228,28 @@ TextBox.properties = {
 TextBox.funcs = {
 	_onPointerEvent = onPointerEvent,
 	_onAbsoluteSizeChanged = onAbsoluteSizeChanged,
+
 	captureFocus = function(self)
-		self._instance:CaptureFocus()
+		local inst = self._instance
+		if inst then
+			inst.Interactable = true
+			inst:CaptureFocus()
+		end
 		safeCall(self, "onFocused")
 	end,
+
 	releaseFocus = function(self)
-		self._instance:ReleaseFocus()
+		local inst = self._instance
+		if inst then
+			inst:ReleaseFocus()
+			inst.Interactable = false
+		end
 		safeCall(self, "onFocusLost")
 	end,
+
 	isFocused = function(self)
-		return self._instance:IsFocused()
+		local inst = self._instance
+		return inst and inst:IsFocused() == true
 	end,
 }
 

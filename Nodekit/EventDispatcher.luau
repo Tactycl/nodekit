@@ -45,6 +45,13 @@ local function isPressInput(input)
 	return input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch
 end
 
+local function getPointerId(input)
+	if input.UserInputType == Enum.UserInputType.Touch then
+		return input
+	end
+	return "mouse1"
+end
+
 local function isPointerEventType(t)
 	return t == "PointerEnter"
 		or t == "PointerLeave"
@@ -139,16 +146,17 @@ local function resolveInputPosition(self, input)
 	return UserInputService:GetMouseLocation()
 end
 
-local function makePayload(self, input, processed, pos, wasButtonPressed)
+local function makePayload(self, input, processed, pos, wasButtonPressed, pointerId)
 	return {
 		input = input,
 		gameProcessed = processed,
 		position = pos,
 		wasButtonPressed = wasButtonPressed == true,
+		pointerId = pointerId,
 	}
 end
 
-local function updateHover(self, pos)
+local function updateHover(self, pointerId, pos)
 	local scene = getRunningScene(self)
 	if not scene then
 		return false
@@ -156,26 +164,54 @@ local function updateHover(self, pos)
 
 	local dispatched = false
 	local hit = findTopmostAt(scene, pos)
+	local prev = self._hoverNodes[pointerId]
 
-	if hit == self._hoverNode then
+	if hit == prev then
 		if hit then
-			dispatchDirect(self, hit, Event:create("PointerMoved", { position = pos }))
+			dispatchDirect(
+				self,
+				hit,
+				Event:create("PointerMoved", {
+					position = pos,
+					pointerId = pointerId,
+				})
+			)
 			dispatched = true
 		end
 		return dispatched
 	end
 
-	local prev = self._hoverNode
-	self._hoverNode = hit
+	self._hoverNodes[pointerId] = hit
 
 	if prev then
-		dispatchDirect(self, prev, Event:create("PointerLeave", { position = pos }))
+		dispatchDirect(
+			self,
+			prev,
+			Event:create("PointerLeave", {
+				position = pos,
+				pointerId = pointerId,
+			})
+		)
 		dispatched = true
 	end
 
 	if hit then
-		dispatchDirect(self, hit, Event:create("PointerEnter", { position = pos }))
-		dispatchDirect(self, hit, Event:create("PointerMoved", { position = pos }))
+		dispatchDirect(
+			self,
+			hit,
+			Event:create("PointerEnter", {
+				position = pos,
+				pointerId = pointerId,
+			})
+		)
+		dispatchDirect(
+			self,
+			hit,
+			Event:create("PointerMoved", {
+				position = pos,
+				pointerId = pointerId,
+			})
+		)
 		dispatched = true
 	end
 
@@ -238,8 +274,8 @@ function EventDispatcher:create(director)
 	inst._director = director
 	inst._enabled = true
 	inst._conns = {}
-	inst._hoverNode = nil
-	inst._pressNode = nil
+	inst._hoverNodes = {}
+	inst._pressNodes = {}
 	inst._focusedNode = nil
 	inst._focusLostConn = nil
 	return inst
@@ -256,25 +292,33 @@ function EventDispatcher:bindUserInput()
 			return
 		end
 
+		local pointerId = getPointerId(input)
 		local pos = resolveInputPosition(self, input)
 
 		local pointerSent = false
-		if updateHover(self, pos) then
-			pointerSent = true
+
+		if input.UserInputType ~= Enum.UserInputType.Touch then
+			if updateHover(self, pointerId, pos) then
+				pointerSent = true
+			end
 		end
 
 		local scene = getRunningScene(self)
 		local hit = scene and findTopmostAt(scene, pos)
 
 		if isPressInput(input) then
-			self._pressNode = hit
+			self._pressNodes[pointerId] = hit
 			if hit then
-				dispatchDirect(self, hit, Event:create("PointerBegan", makePayload(self, input, gp, pos, false)))
+				dispatchDirect(
+					self,
+					hit,
+					Event:create("PointerBegan", makePayload(self, input, gp, pos, false, pointerId))
+				)
 				pointerSent = true
 			end
 		end
 
-		handleNode(self, scene, Event:create("InputBegan", makePayload(self, input, gp, pos, pointerSent)))
+		handleNode(self, scene, Event:create("InputBegan", makePayload(self, input, gp, pos, pointerSent, pointerId)))
 	end)
 
 	self._conns[#self._conns + 1] = UserInputService.InputChanged:Connect(function(input, gp)
@@ -282,6 +326,7 @@ function EventDispatcher:bindUserInput()
 			return
 		end
 
+		local pointerId = getPointerId(input)
 		local pos = resolveInputPosition(self, input)
 
 		local pointerSent = false
@@ -291,20 +336,27 @@ function EventDispatcher:bindUserInput()
 			if d ~= 0 and dispatchWheel(self, pos, d) then
 				pointerSent = true
 			end
+
 		else
-			if updateHover(self, pos) then
-				pointerSent = true
+			if input.UserInputType ~= Enum.UserInputType.Touch then
+				if updateHover(self, pointerId, pos) then
+					pointerSent = true
+				end
 			end
 		end
 
 		local scene = getRunningScene(self)
 		local hit = scene and findTopmostAt(scene, pos)
 		if hit then
-			dispatchDirect(self, hit, Event:create("PointerChanged", makePayload(self, input, gp, pos, false)))
+			dispatchDirect(
+				self,
+				hit,
+				Event:create("PointerChanged", makePayload(self, input, gp, pos, false, pointerId))
+			)
 			pointerSent = true
 		end
 
-		handleNode(self, scene, Event:create("InputChanged", makePayload(self, input, gp, pos, pointerSent)))
+		handleNode(self, scene, Event:create("InputChanged", makePayload(self, input, gp, pos, pointerSent, pointerId)))
 	end)
 
 	self._conns[#self._conns + 1] = UserInputService.InputEnded:Connect(function(input, gp)
@@ -312,31 +364,45 @@ function EventDispatcher:bindUserInput()
 			return
 		end
 
+		local pointerId = getPointerId(input)
 		local scene = getRunningScene(self)
 		local pos = resolveInputPosition(self, input)
 
 		local pointerSent = false
-		if updateHover(self, pos) then
-			pointerSent = true
+
+		if input.UserInputType ~= Enum.UserInputType.Touch then
+			if updateHover(self, pointerId, pos) then
+				pointerSent = true
+			end
 		end
 
 		if isPressInput(input) then
 			local hit = scene and findTopmostAt(scene, pos)
+			local pressed = self._pressNodes[pointerId]
 
 			if hit then
-				dispatchDirect(self, hit, Event:create("PointerEnded", makePayload(self, input, gp, pos, false)))
+				dispatchDirect(
+					self,
+					hit,
+					Event:create("PointerEnded", makePayload(self, input, gp, pos, false, pointerId))
+				)
 				pointerSent = true
 			end
 
-			if hit and hit == self._pressNode then
-				dispatchDirect(self, hit, Event:create("PointerClick", makePayload(self, input, gp, pos, false)))
+			if hit and pressed and hit == pressed then
+				dispatchDirect(
+					self,
+					hit,
+					Event:create("PointerClick", makePayload(self, input, gp, pos, false, pointerId))
+				)
 				pointerSent = true
 			end
 
-			self._pressNode = nil
+			self._pressNodes[pointerId] = nil
+			self._hoverNodes[pointerId] = nil
 		end
 
-		handleNode(self, scene, Event:create("InputEnded", makePayload(self, input, gp, pos, pointerSent)))
+		handleNode(self, scene, Event:create("InputEnded", makePayload(self, input, gp, pos, pointerSent, pointerId)))
 	end)
 
 	return self
@@ -347,8 +413,8 @@ function EventDispatcher:destroy()
 		c:Disconnect()
 	end
 	self._conns = {}
-	self._hoverNode = nil
-	self._pressNode = nil
+	self._hoverNodes = {}
+	self._pressNodes = {}
 	self._director = nil
 end
 

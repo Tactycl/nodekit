@@ -3,11 +3,12 @@ local safeCall = require("../../../util/safeCall")
 return function(self, event)
 	local t = event.type
 	local p = event.payload
+	local inst = self._instance
 
 	if t == "PointerEnter" then
 		self._hovered = true
-		if self._instance:IsA("TextBox") then
-			self._instance.Interactable = true
+		if inst and inst:IsA("TextBox") then
+			inst.Interactable = true
 		end
 		safeCall(self, "onMouseEnter", p)
 		return
@@ -15,8 +16,8 @@ return function(self, event)
 
 	if t == "PointerLeave" then
 		self._hovered = false
-		if self._instance:IsA("TextBox") and not self:isFocused() then
-			self._instance.Interactable = false
+		if inst and inst:IsA("TextBox") and not self:isFocused() then
+			inst.Interactable = false
 		end
 		safeCall(self, "onMouseLeave", p)
 		return
@@ -43,10 +44,11 @@ return function(self, event)
 			return
 		end
 
-		if
-			input.UserInputType == Enum.UserInputType.MouseButton1
-			or input.UserInputType == Enum.UserInputType.Touch
-		then
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			if self._instance:IsA("TextBox") then
+				self:captureFocus()
+			end
+
 			self._pressed = true
 			safeCall(self, "onPress", p)
 			event:consume()
@@ -61,10 +63,7 @@ return function(self, event)
 			return
 		end
 
-		if
-			input.UserInputType == Enum.UserInputType.MouseButton1
-			or input.UserInputType == Enum.UserInputType.Touch
-		then
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			self._pressed = false
 			safeCall(self, "onRelease", p)
 			event:consume()
@@ -74,6 +73,9 @@ return function(self, event)
 	end
 
 	if t == "PointerClick" then
+		if self._instance:IsA("TextBox") then
+			self:captureFocus()
+		end
 		safeCall(self, "onClick", p)
 		event:consume()
 		return
