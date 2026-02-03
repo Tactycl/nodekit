@@ -28,11 +28,11 @@ TextBox.create = function(self)
 	self._instance.PlaceholderColor3 = Color3.new(0, 0, 0)
 
 	self._instance.FocusLost:Connect(function()
-		safeCall(self, "FocusLost")
+		safeCall(self, "onFocusLost")
 	end)
 
 	self._instance.Focused:Connect(function()
-		safeCall(self, "Focused")
+		safeCall(self, "onFocused")
 	end)
 end
 
