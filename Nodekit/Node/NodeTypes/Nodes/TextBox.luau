@@ -26,6 +26,14 @@ TextBox.create = function(self)
 	self._instance.BorderColor3 = Color3.new(0, 0, 0)
 	self._instance.TextColor3 = Color3.new(0, 0, 0)
 	self._instance.PlaceholderColor3 = Color3.new(0, 0, 0)
+
+	self._instance.FocusLost:Connect(function()
+		safeCall(self, "FocusLost")
+	end)
+
+	self._instance.Focused:Connect(function()
+		safeCall(self, "Focused")
+	end)
 end
 
 TextBox.properties = {
