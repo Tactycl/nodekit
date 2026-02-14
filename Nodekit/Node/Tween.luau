@@ -92,13 +92,32 @@ local function resolveRead(node, propName, kind)
 	return nil
 end
 
-function Tween:create(node, time, easingStyle, easingDirection)
+local function fireCompleted(self)
+	if self._rec.cancelled then
+		return
+	end
+	local node = self._node
+	if node and node._untrackTween then
+		node:_untrackTween(self)
+	end
+	for _, cb in self._rec.completed do
+		task.spawn(cb)
+	end
+end
+
+function Tween:create(node: any, time: number, easingStyleOrFunc: Enum.EasingStyle?|(v: number) -> (number)?, easingDirection: Enum.EasingDirection?)
 	local inst = setmetatable({}, Tween)
 
 	inst._node = node
 	inst._time = (typeof(time) == "number" and time) or 0
-	inst._style = easingStyle or Enum.EasingStyle.Linear
-	inst._dir = easingDirection or Enum.EasingDirection.In
+	
+	if typeof(easingStyleOrFunc) == "function" then
+		inst._interpolateFunc = easingStyleOrFunc
+		
+	else
+		inst._style = easingStyleOrFunc or Enum.EasingStyle.Linear
+		inst._dir = easingDirection or Enum.EasingDirection.In
+	end
 
 	inst._goals = {}
 
@@ -116,7 +135,7 @@ function Tween:create(node, time, easingStyle, easingDirection)
 	return inst
 end
 
-function Tween:_setGoal(propName, value)
+function Tween:_setGoal(propName: string, value: number)
 	assertNotPlayed(self)
 
 	local node = self._node
@@ -143,7 +162,7 @@ function Tween:_setGoal(propName, value)
 	return self
 end
 
-function Tween:onCompleted(cb)
+function Tween:onCompleted(cb: () -> ()?)
 	table.insert(self._rec.completed, cb)
 	return self
 end
@@ -165,19 +184,6 @@ function Tween:cancel()
 	end
 	self._rec.conn = nil
 	return self
-end
-
-local function fireCompleted(self)
-	if self._rec.cancelled then
-		return
-	end
-	local node = self._node
-	if node and node._untrackTween then
-		node:_untrackTween(self)
-	end
-	for _, cb in self._rec.completed do
-		task.spawn(cb)
-	end
 end
 
 function Tween:play()
@@ -272,7 +278,17 @@ function Tween:play()
 			alpha = 1
 		end
 
-		local eased = TweenService:GetValue(alpha, self._style, self._dir)
+		local eased
+		if typeof(self._interpolateFunc) == "function" then
+			eased = self._interpolateFunc(alpha)
+			
+		else
+			eased = TweenService:GetValue(alpha, self._style, self._dir)
+		end
+		
+		if alpha >= 1 then
+			eased = 1
+		end
 
 		for _, tr in tracks do
 			local v = tr.lerp(tr.from, tr.to, eased)

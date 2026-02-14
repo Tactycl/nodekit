@@ -399,8 +399,8 @@ function Node:_untrackTween(tween)
 	end
 end
 
-function Node:tween(time: number, easingStyle: Enum.EasingStyle?, easingDirection: Enum.EasingDirection?)
-	local tweenInstance = Tween:create(self, time, easingStyle, easingDirection)
+function Node:tween(time: number, easingStyleOrFunc: Enum.EasingStyle?|(v: number) -> (number)?, easingDirection: Enum.EasingDirection?)
+	local tweenInstance = Tween:create(self, time, easingStyleOrFunc, easingDirection)
 	self._tweens[tweenInstance] = true
 	return tweenInstance
 end
