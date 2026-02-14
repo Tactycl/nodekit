@@ -3,7 +3,7 @@ local safeCall = require("../util/safeCall")
 local NodeTypes = {}
 NodeTypes.classes = {}
 
-local function initNodeType(fnNewNode, mod)
+local function initNodeType(fnNewNode: (rblxClass: string) -> (any), mod: ModuleScript)
 	NodeTypes.classes[mod.Name] = {
 		create = function(self, ...)
 			local t = require(mod)
