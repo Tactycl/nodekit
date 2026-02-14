@@ -34,7 +34,7 @@ function Action:_baseCreate(node)
 	return inst
 end
 
-function Action:onCompleted(cb)
+function Action:onComplete(cb)
 	table.insert(self._rec.completed, cb)
 	return self
 end
@@ -145,12 +145,12 @@ function Action.sequence(node, ...)
 			return
 		end
 
-		if step.onCompleted then
-			step:onCompleted(function()
+		if step.onComplete then
+			step:onComplete(function()
 				playNext(self)
 			end)
 		else
-			error("sequence(...) expects steps with :onCompleted(cb) + :play()", 3)
+			error("sequence(...) expects steps with :onComplete(cb) + :play()", 3)
 		end
 
 		if step.play then
@@ -218,10 +218,10 @@ function Action.parallel(node, ...)
 
 		for _, step in self._steps do
 			if step then
-				if not step.onCompleted or not step.play then
-					error("parallel(...) expects steps with :onCompleted(cb) + :play()", 3)
+				if not step.onComplete or not step.play then
+					error("parallel(...) expects steps with :onComplete(cb) + :play()", 3)
 				end
-				step:onCompleted(oneDone)
+				step:onComplete(oneDone)
 				step:play()
 			end
 		end

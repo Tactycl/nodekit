@@ -54,12 +54,12 @@ function TransitionFade:run(duration: number, incoming: any, outgoing: any, fini
 	local tweenOut = overlay:tween(half, Enum.EasingStyle.Quad, Enum.EasingDirection.In):toBackgroundTransparency(1)
 
 	incoming:setVisible(false)
-	tweenIn:onCompleted(function()
+	tweenIn:onComplete(function()
 		if outgoing then
 			outgoing:setVisible(false)
 		end
 
-		tweenOut:onCompleted(function()
+		tweenOut:onComplete(function()
 			overlay:destroy()
 			finalize()
 		end)

@@ -162,7 +162,7 @@ function Tween:_setGoal(propName: string, value: number)
 	return self
 end
 
-function Tween:onCompleted(cb: () -> ()?)
+function Tween:onComplete(cb: () -> ()?)
 	table.insert(self._rec.completed, cb)
 	return self
 end
