@@ -40,7 +40,7 @@ end
 
 function Director:init()
 	if _instance then
-		return
+		return _instance
 	end
 
 	local inst = setmetatable({}, Director)
