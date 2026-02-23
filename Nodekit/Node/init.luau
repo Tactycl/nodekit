@@ -288,6 +288,35 @@ function Node:removeFromParent()
 	return self
 end
 
+function Node:getDescendants()
+	local descendants = {}
+	local function walk(node)
+		for _, childNode in node._children do
+			table.insert(descendants, childNode)
+			walk(childNode)
+		end
+	end
+	walk(self)
+	return table.freeze(descendants)
+end
+
+function Node:getDescendantsByType(type: string, ignoresNodeDescendantsWhenNodeNotType: boolean?)
+	local descendants = {}
+	local function walk(node)
+		for _, childNode in node._children do
+			if childNode._type == type then
+				table.insert(descendants, childNode)
+				walk(childNode)
+
+			elseif not ignoresNodeDescendantsWhenNodeNotType then
+				walk(childNode)
+			end
+		end
+	end
+	walk(self)
+	return table.freeze(descendants)
+end
+
 function Node:getChildren()
 	return table.freeze(table.clone(self._children))
 end
