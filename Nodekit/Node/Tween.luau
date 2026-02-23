@@ -25,35 +25,31 @@ local function assertNotPlayed(self)
 	end
 end
 
-local function lerpNumber(a, b, t)
-	return a + (b - a) * t
-end
-
 local function lerpColor3(a, b, t)
-	return Color3.new(lerpNumber(a.R, b.R, t), lerpNumber(a.G, b.G, t), lerpNumber(a.B, b.B, t))
+	return Color3.new(math.lerp(a.R, b.R, t), math.lerp(a.G, b.G, t), math.lerp(a.B, b.B, t))
 end
 
 local function lerpVector2(a, b, t)
-	return Vector2.new(lerpNumber(a.X, b.X, t), lerpNumber(a.Y, b.Y, t))
+	return Vector2.new(math.lerp(a.X, b.X, t), math.lerp(a.Y, b.Y, t))
 end
 
 local function lerpUDim(a, b, t)
-	return UDim.new(lerpNumber(a.Scale, b.Scale, t), math.floor(lerpNumber(a.Offset, b.Offset, t) + 0.5))
+	return UDim.new(math.lerp(a.Scale, b.Scale, t), math.floor(math.lerp(a.Offset, b.Offset, t) + 0.5))
 end
 
 local function lerpUDim2(a, b, t)
 	return UDim2.new(
-		lerpNumber(a.X.Scale, b.X.Scale, t),
-		math.floor(lerpNumber(a.X.Offset, b.X.Offset, t) + 0.5),
-		lerpNumber(a.Y.Scale, b.Y.Scale, t),
-		math.floor(lerpNumber(a.Y.Offset, b.Y.Offset, t) + 0.5)
+		math.lerp(a.X.Scale, b.X.Scale, t),
+		math.floor(math.lerp(a.X.Offset, b.X.Offset, t) + 0.5),
+		math.lerp(a.Y.Scale, b.Y.Scale, t),
+		math.floor(math.lerp(a.Y.Offset, b.Y.Offset, t) + 0.5)
 	)
 end
 
 local function getLerperFor(value)
 	local t = typeof(value)
 	if t == "number" then
-		return lerpNumber
+		return math.lerp
 	end
 	if t == "Color3" then
 		return lerpColor3
@@ -75,6 +71,9 @@ local function resolveWrite(node, propName)
 		local setFn = node._metaVirtualWriteable[propName]
 		return "virtual", setFn
 	end
+	if typeof(node[`set{propName}`]) == "function" then
+		return "virtual", node[`set{propName}`]
+	end
 	if node._metaWriteable and node._metaWriteable[propName] then
 		return "native", nil
 	end
@@ -86,6 +85,9 @@ local function resolveRead(node, propName, kind)
 	if kind == "virtual" then
 		if node._metaVirtualReadable and node._metaVirtualReadable[propName] then
 			return node._metaVirtualReadable[propName]
+		end
+		if typeof(node[`get{propName}`]) == "function" then
+			return node[`get{propName}`]
 		end
 	end
 
