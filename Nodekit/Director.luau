@@ -100,6 +100,11 @@ function Director:getScale()
 	return v > 0 and v
 end
 
+function Director:getWinSize()
+	local size = self.froot:getSize()
+	return Vector2.new(size.X.Offset, size.Y.Offset)
+end
+
 function Director:runWithScene(scene)
 	self.sceneStack = { scene }
 	self.runningScene = scene
