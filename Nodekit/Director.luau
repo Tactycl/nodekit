@@ -358,4 +358,15 @@ function Director:getNumberOfRunningScenes()
 	return #self.sceneStack
 end
 
+-- For global persistent layers
+function Director:addChild(childNode, zIndex: number?)
+	self.froot:addChild(childNode, zIndex)
+	return self
+end
+
+function Director:add(...)
+	self.froot:add(...)
+	return self
+end
+
 return Director
