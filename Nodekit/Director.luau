@@ -1,4 +1,6 @@
+local GuiService = game:GetService("GuiService")
 local Players = game:GetService("Players")
+
 local LocalPlayer = Players.LocalPlayer
 
 local Node = require("./Node")
@@ -107,6 +109,10 @@ end
 
 function Director:getAbsoluteWinSize()
 	return self:getWinSize() * self:getScale()
+end
+
+function Director:getGuiInset()
+	return GuiService:GetGuiInset()
 end
 
 function Director:runWithScene(scene)
