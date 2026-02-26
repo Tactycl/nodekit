@@ -105,6 +105,10 @@ function Director:getWinSize()
 	return Vector2.new(size.X.Offset, size.Y.Offset)
 end
 
+function Director:getAbsoluteWinSize()
+	return self:getWinSize() * self:getScale()
+end
+
 function Director:runWithScene(scene)
 	self.sceneStack = { scene }
 	self.runningScene = scene
