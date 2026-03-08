@@ -15,14 +15,22 @@ local function normalizeGuiSiblingOrder(parentNode)
 	end
 
 	local z = 0
-	for _, childNode in parentNode._children do
-		local inst = childNode._instance
-		if inst and inst:IsA("GuiObject") then
-			inst.ZIndex = z
-			inst.LayoutOrder = z
-			z += 1
+	local function apply(baseType)
+		for _, childNode in parentNode._children do
+			if childNode._BASE_TYPE == baseType then
+				local inst = childNode._instance
+				if inst and inst:IsA("GuiObject") then
+					inst.ZIndex = z
+					inst.LayoutOrder = z
+					z += 1
+				end
+			end
 		end
 	end
+
+	apply("Scene")
+	apply("Layer")
+	apply("Node")
 end
 
 local function clampInsertIndex(zIndex: number, len: number): number
@@ -87,6 +95,7 @@ local function updateInstanceName(self)
 end
 
 local Node = {}
+Node._BASE_TYPE = "Node"
 Node.__index = function(self, key)
 	local method = rawget(Node, key)
 	if method then
@@ -230,7 +239,7 @@ function Node:getType()
 end
 
 function Node:isA(n: string)
-	if self._type == n then
+	if self._type == n or self._BASE_TYPE == n then
 		return true
 	end
 	return self._instance:IsA(n)
@@ -304,7 +313,7 @@ function Node:getDescendantsByType(type: string, ignoresNodeDescendantsWhenNodeN
 	local descendants = {}
 	local function walk(node)
 		for _, childNode in node._children do
-			if childNode._type == type then
+			if childNode._type == type or childNode._BASE_TYPE == type then
 				table.insert(descendants, childNode)
 				walk(childNode)
 
@@ -324,7 +333,7 @@ end
 function Node:getChildrenByType(type: string)
 	local children = {}
 	for _, childNode in self._children do
-		if childNode._type == type then
+		if childNode._type == type or childNode._BASE_TYPE == type then
 			table.insert(children, childNode)
 		end
 	end
@@ -351,7 +360,7 @@ end
 function Node:getChildByType(type: string, i: number?)
 	local currentPointerIndex = 0
 	for _, childNode in self._children do
-		if childNode._type == type then
+		if childNode._type == type or childNode._BASE_TYPE == type then
 			if currentPointerIndex == (i or 0) then
 				return childNode
 			end
