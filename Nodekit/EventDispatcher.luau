@@ -241,7 +241,7 @@ local function dispatchWheel(self, pos, delta)
 	return false
 end
 
-local function dispatchDownTree(self, root, event)
+local function dispatchDownTree(self, root, event, selfPriority)
 	if not root or not event then
 		return event
 	end
@@ -266,6 +266,18 @@ local function dispatchDownTree(self, root, event)
 		handleNode(self, node, event)
 	end
 
+	if selfPriority then
+		handleNode(self, root, event)
+
+		if event.isConsumed and typeof(event.isConsumed) == "function" and event:isConsumed() then
+			return event
+		end
+
+		if isBlockingLayer(root) then
+			return event
+		end
+	end
+
 	walk(root)
 	return event
 end
@@ -277,7 +289,6 @@ function EventDispatcher:create(director)
 	inst._conns = {}
 	inst._hoverNodes = {}
 	inst._pressNodes = {}
-	inst._focusedNode = nil
 	inst._focusLostConn = nil
 	return inst
 end
@@ -319,7 +330,7 @@ function EventDispatcher:bindUserInput()
 			end
 		end
 
-		dispatchDownTree(self, scene, Event:create("InputBegan", makePayload(input, gp, pos, pointerSent, pointerId)))
+		dispatchDownTree(self, scene, Event:create("InputBegan", makePayload(input, gp, pos, pointerSent, pointerId)), true)
 	end)
 
 	self._conns[#self._conns + 1] = UserInputService.InputChanged:Connect(function(input, gp)
@@ -357,7 +368,7 @@ function EventDispatcher:bindUserInput()
 			pointerSent = true
 		end
 
-		dispatchDownTree(self, scene, Event:create("InputChanged", makePayload(input, gp, pos, pointerSent, pointerId)))
+		dispatchDownTree(self, scene, Event:create("InputChanged", makePayload(input, gp, pos, pointerSent, pointerId)), true)
 	end)
 
 	self._conns[#self._conns + 1] = UserInputService.InputEnded:Connect(function(input, gp)
@@ -403,7 +414,7 @@ function EventDispatcher:bindUserInput()
 			self._hoverNodes[pointerId] = nil
 		end
 
-		dispatchDownTree(self, scene, Event:create("InputEnded", makePayload(input, gp, pos, pointerSent, pointerId)))
+		dispatchDownTree(self, scene, Event:create("InputEnded", makePayload(input, gp, pos, pointerSent, pointerId)), true)
 	end)
 
 	return self
